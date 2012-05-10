@@ -1,5 +1,7 @@
 describe("the Mirage object",function(){
 
+	var ElMaker = function(constr){ return function(o){ return constr.call({propdef:o});} }
+
 	it("is defined",function(){
 		expect(Mirage).toBeAnObject();
 	});
@@ -10,7 +12,7 @@ describe("the Mirage object",function(){
 			expect(Mirage).toBeAFunction();
 		});
 		describe("the produced instance",function(){
-			var view = new PropBaseView({propdef:{name:"foo"}});
+			var view = new PropBaseView({propdef:{name:"foo",val:"bar",type:"baz"}});
 			it("is a PropBaseView-produced backbone view instance",function(){
 				expect(view).toBeA(PropBaseView);
 				expect(view).toBeA(Backbone.View);
@@ -18,14 +20,14 @@ describe("the Mirage object",function(){
 			it("has a span element",function(){
 				expect(view.$el).toBe("span");
 			});
-			it("has name from opts propdef as property",function(){
-				expect(view.name).toBe("foo");
+			it("has type-related class on the element",function(){
+				expect(view.$el).toHaveClass("prop-baz");
 			});
 			it("has propdef from opts as property",function(){
-				expect(view.propdef).toEqual({name:"foo"});
+				expect(view.propdef).toEqual({name:"foo",val:"bar",type:"baz"});
 			});
 			describe("the label element maker",function(){
-				var mkr = view.LabelElement;
+				var mkr = ElMaker(view.LabelElement);
 				it("is defined",function(){
 					expect(mkr).toBeDefined();
 				});
@@ -43,7 +45,7 @@ describe("the Mirage object",function(){
 				});
 			});
 			describe("the value element maker",function(){
-				var mkr = view.ValueElement;
+				var mkr = ElMaker(view.ValueElement);
 				it("is defined",function(){
 					expect(mkr).toBeDefined();
 				});
@@ -81,7 +83,7 @@ describe("the Mirage object",function(){
 				expect(view).toBeA(Backbone.View);
 			});
 			describe("the edit element maker",function(){
-				var mkr = view.EditElement;
+				var mkr = ElMaker(view.EditElement);
 				it("is defined",function(){
 					expect(mkr).toBeDefined();
 				});
@@ -112,7 +114,7 @@ describe("the Mirage object",function(){
 				expect(view).toBeA(Backbone.View);
 			});
 			describe("the edit element maker",function(){
-				var mkr = view.EditElement;
+				var mkr = ElMaker(view.EditElement);
 				it("is defined",function(){
 					expect(mkr).toBeDefined();
 				});
@@ -133,7 +135,7 @@ describe("the Mirage object",function(){
 				});
 			});
 			describe("the value element maker",function(){
-				var mkr = view.ValueElement;
+				var mkr = ElMaker(view.ValueElement);
 				it("returns the correct value",function(){
 					var label = mkr({name:"somename",type:"sometype",val:true});
 					expect(label).toBeA($);
@@ -177,7 +179,7 @@ describe("the Mirage object",function(){
 				expect(view).toBeA(Backbone.View);
 			});
 			describe("the value element maker",function(){
-				var mkr = view.ValueElement;
+				var mkr = ElMaker(view.ValueElement);
 				it("returns the correct element",function(){
 					var el = mkr({
 						name:"foo",
@@ -192,7 +194,7 @@ describe("the Mirage object",function(){
 				});
 			});
 			describe("the edit element maker",function(){
-				var mkr = view.EditElement;
+				var mkr = ElMaker(view.EditElement);
 				it("is defined",function(){
 					expect(mkr).toBeDefined();
 				});
