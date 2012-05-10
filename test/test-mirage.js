@@ -1,13 +1,13 @@
 describe("the Mirage object",function(){
 
-	var ElMaker = function(constr){ return function(o){ return constr.call({propdef:o});} }
+	var ElMaker = function(constr){ return function(o){ return constr.call({propdef:o});}; };
 
 	it("is defined",function(){
 		expect(Mirage).toBeAnObject();
 	});
 
 	describe("the PropertyBaseView",function(){
-		var PropBaseView = Mirage.PropertyBaseView;
+		var PropBaseView = Mirage.Property.BaseView;
 		it("is defined",function(){
 			expect(Mirage).toBeAFunction();
 		});
@@ -71,7 +71,7 @@ describe("the Mirage object",function(){
 	});
 	
 	describe("the PropertyTextView",function(){
-		var PropertyTextView = Mirage.PropertyTextView;
+		var PropertyTextView = Mirage.Property.TextView;
 		it("is defined",function(){
 			expect(typeof Mirage).toBeAFunction();
 		});
@@ -79,7 +79,7 @@ describe("the Mirage object",function(){
 			var view = new PropertyTextView({propdef:{name:"foo",val:"bar"}});
 			it("is a PropBaseView-produced backbone view instance",function(){
 				expect(view).toBeA(PropertyTextView);
-				expect(view).toBeA(Mirage.PropertyBaseView);
+				expect(view).toBeA(Mirage.Property.BaseView);
 				expect(view).toBeA(Backbone.View);
 			});
 			describe("the edit element maker",function(){
@@ -102,7 +102,7 @@ describe("the Mirage object",function(){
 	});
 
 	describe("the PropertyBoolView",function(){
-		var PropertyBoolView = Mirage.PropertyBoolView;
+		var PropertyBoolView = Mirage.Property.BoolView;
 		it("is defined",function(){
 			expect(typeof Mirage).toBeAFunction();
 		});
@@ -110,7 +110,7 @@ describe("the Mirage object",function(){
 			var view = new PropertyBoolView({propdef:{name:"foo",val:true}});
 			it("is a PropBaseView-produced backbone view instance",function(){
 				expect(view).toBeA(PropertyBoolView);
-				expect(view).toBeA(Mirage.PropertyBaseView);
+				expect(view).toBeA(Mirage.Property.BaseView);
 				expect(view).toBeA(Backbone.View);
 			});
 			describe("the edit element maker",function(){
@@ -161,7 +161,7 @@ describe("the Mirage object",function(){
 	});
 
 	describe("the PropertySelectView",function(){
-		var PropertySelectView = Mirage.PropertySelectView;
+		var PropertySelectView = Mirage.Property.SelectView;
 		it("is defined",function(){
 			expect(PropertySelectView).toBeAFunction();
 		});
@@ -175,7 +175,7 @@ describe("the Mirage object",function(){
 			});
 			it("is a PropBaseView-produced backbone view instance",function(){
 				expect(view).toBeA(PropertySelectView);
-				expect(view).toBeA(Mirage.PropertyBaseView);
+				expect(view).toBeA(Mirage.Property.BaseView);
 				expect(view).toBeA(Backbone.View);
 			});
 			describe("the value element maker",function(){

@@ -10,7 +10,7 @@ this.Mirage = (function(){
 			var o = this.propdef;
 			return $("<span class='prop-val prop-"+o.type+"-val'>"+o.val+"</span>");
 		},
-		getValue: function(){ // for edit mode
+		getValue: function(){
 			return this.$("input.prop-edit").val();
 		},
 		initialize: function(opts){ // must have a propdef
@@ -25,17 +25,17 @@ this.Mirage = (function(){
 		}
 	});
 	var PropertyBoolView = PropertyBaseView.extend({
-		EditElement: function(o){
+		EditElement: function(){
 			var o = this.propdef;
 			return $("<input name='"+o.name+"' type='checkbox' class='prop-edit prop-checkbox-edit' value='"+o.name+"' "+(o.val?"checked='checked'":"")+"></input>");
 		},
-		ValueElement: function(o){
+		ValueElement: function(){
 			var o = this.propdef, txt = o.val ? o.truetext || "&radic;" : o.falsetext || "X";
 			return $("<span class='prop-val prop-checkbox-val'>"+txt+"</span>");
 		}
 	});
 	var PropertySelectView = PropertyBaseView.extend({
-		EditElement: function(o){ // o has name,val,options
+		EditElement: function(){ // o has name,val,options
 			var o = this.propdef, optstr = "", opts = o.options;
 			for(var i=0,l=opts.length;i<l;i++){
 				var opt = opts[i];
@@ -43,7 +43,7 @@ this.Mirage = (function(){
 			}
 			return $("<select class='prop-edit prop-select-edit' name='"+o.name+"'>"+optstr+"</select>");
 		},
-		ValueElement: function(o){
+		ValueElement: function(){
 			var o = this.propdef, opt, opts = o.options;
 			for(var i=0,l=opts.length;i<l;i++){
 				if (o.val === opts[i].val){
@@ -113,10 +113,11 @@ callback: for edit mode,
 	
 	
 	return {
-		MirageModelView: MirageModelView,
-		PropertyBaseView: PropertyBaseView,
-		PropertyTextView: PropertyTextView,
-		PropertyBoolView: PropertyBoolView,
-		PropertySelectView: PropertySelectView
+		Property: {
+			BaseView: PropertyBaseView,
+			TextView: PropertyTextView,
+			BoolView: PropertyBoolView,
+			SelectView: PropertySelectView
+		}
 	};
 }());
