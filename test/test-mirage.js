@@ -213,11 +213,11 @@ describe("the Mirage object",function(){
 					expect(mkr).toBeDefined();
 				});
 				it("returns the correct value",function(){
-					var label = $(mkr({name:"foo",val:"baz"}));
+					var label = $(mkr({name:"foo",val:"baz"},"WOO"));
 					expect(label).toBe("input");
 					expect(label).toHaveAttr("type","text");
 					expect(label).toHaveAttr("name","foo");
-					expect(label).toHaveValue("baz");
+					expect(label).toHaveValue("WOO");
 					expect(label).toHaveClass("prop-edit-ctrl");
 				});
 			});
@@ -316,6 +316,17 @@ describe("the Mirage object",function(){
 					},3);
 					expect(el).toEqual("three");
 				});
+				it("should use makeValue function if supplied, and use valueProp",function(){
+					var el = mkr({
+						name:"foo",
+						valueProp: "num",
+						options: [{text:'one',num:1},{text:'two',num:2},{text:'three',num:3}],
+						makeValue: function(opt){
+							return opt.text+"FFS";
+						}
+					},2);
+					expect(el).toEqual("twoFFS");
+				});
 			});
 			describe("the edit html maker",function(){
 				var mkr = view.editHtml;
@@ -323,16 +334,28 @@ describe("the Mirage object",function(){
 					expect(mkr).toBeDefined();
 				});
 				it("returns the correct value",function(){
-					var label = $(mkr({
+					var el = mkr({
 						name:"foo",
-						val:3,
 						options: [{text:'one',val:1},{text:'two',val:2},{text:'three',val:3}]
-					}));
-					expect(label).toBeA($);
-					expect(label).toBe("select");
-					expect(label).toHaveAttr("name","foo");
-					expect(label).toHaveHtml("<option value='1'>one</option><option value='2'>two</option><option value='3' selected='selected'>three</option>");
-					expect(label).toHaveClass("prop-edit-ctrl");
+					},2), $el = $(el);
+					expect($el).toBe("select");
+					expect($el).toHaveAttr("name","foo");
+					expect($el).toHaveHtml("<option value='1'>one</option><option value='2' selected='selected'>two</option><option value='3'>three</option>");
+					expect($el).toHaveClass("prop-edit-ctrl");
+				});
+				it("should use makeSelectOption function if supplied, and use valueProp",function(){
+					var el = mkr({
+						name:"foo",
+						valueProp: "id",
+						options: [{text:'one',id:1},{text:'two',id:2},{text:'three',id:3}],
+						makeSelectOption: function(opt){
+							return opt.text+"FFS";
+						}
+					},1), $el = $(el);
+					expect($el).toBe("select");
+					expect($el).toHaveAttr("name","foo");
+					expect($el).toHaveHtml("<option value='1' selected='selected'>oneFFS</option><option value='2'>twoFFS</option><option value='3'>threeFFS</option>");
+					expect($el).toHaveClass("prop-edit-ctrl");
 				});
 			});
 		});
