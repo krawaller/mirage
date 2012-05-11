@@ -19,11 +19,16 @@ this.Mirage = (function(){
 		
 		// The initialize function needs a propdef (Property definition) and a kind (one of label,
 		// value or edit). It will store the propdef on the instance for later access, and build
-		// the correct element depending on the kind.
+		// the correct element depending on the kind. If a `clickevent` was supplied, we bind that
+		// to the element.
 		initialize: function(opts){
-			this.propdef = opts.propdef;
+			var o = opts.propdef, click = o.clickevent;
+			this.propdef = o;
 			this.setElement(this.buildElement(opts.kind));
-			this.$el.addClass("prop-"+opts.propdef.type);
+			this.$el.addClass("prop-"+o.type);
+			if (click){
+				this.$el.on.apply(this.$el,click.selector?["click",click.selector,click.callback]:["click",click.callback]);
+			}
 		},
 		
 		// Called from `initialize` with viewkind (label/value/edit) as argument.
@@ -154,14 +159,14 @@ this.Mirage = (function(){
 			if (!val || !val.length){
 				return o.empty || "-----";
 			}
-			var sel = [], ret = "", opts = o.options, valprop = o.valueProp || "val"
+			var sel = [], ret = "", opts = o.options, valprop = o.valueProp || "val";
 			for(var i=0,l=opts.length;i<l;i++){
 				if (_.indexOf(val,opts[i][valprop]) !== -1){
 					sel.push(opts[i]);
 				}
 			}
 			_.each(sel,function(opt){
-				ret += o.makeValue ? o.makeValue(opt) : "<span>"+opt.text+"</span>";
+				ret += "<span key='"+opt[valprop]+"'>"+(o.makeValue ? o.makeValue(opt) : opt.text)+"</span>";
 			});
 			return ret;
 		}

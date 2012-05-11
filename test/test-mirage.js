@@ -43,6 +43,32 @@ describe("the Mirage object", function() {
 				expect(instance.mynewelement).toEqual("valueoreditorlabelFFS");
 				expect(addedclass).toEqual("prop-sometype");
 			});
+			it("should handle clicks!",function(){
+				var p = 0, callback = function(){
+						p++;
+					},v = new PropBaseView({
+					kind: "value",
+					model: {
+						attributes: {
+							foo: "BAR!"
+						},
+						on: function() {}
+					},
+					propdef: {
+						name: "foo",
+						type: "baz",
+						clickevent: {
+							selector: "p",
+							callback: callback
+						}
+					}
+				});
+				v.$el.html("<p>woo</p>");
+				v.$el.click();
+				expect(p).toEqual(0);
+				v.$el.find("p").click();
+				expect(p).toEqual(1);
+			});
 			describe("the created instance", function() {
 				var view = new PropBaseView({
 					kind: "value",
@@ -424,7 +450,7 @@ describe("the Mirage object", function() {
 					it("should default to ----- if val is empty", function() {
 						var el = mkr({
 							name: "foo",
-							options: [],
+							options: []
 						});
 						expect(el).toEqual("-----");
 					});
@@ -546,7 +572,7 @@ describe("the Mirage object", function() {
 							}]
 						},
 						[1,3]);
-						expect(el).toEqual("<span>one</span><span>three</span>");
+						expect(el).toEqual("<span key='1'>one</span><span key='3'>three</span>");
 					});
 					it("should use makeValue function if supplied, and use valueProp", function() {
 						var el = mkr({
@@ -569,12 +595,12 @@ describe("the Mirage object", function() {
 							}
 						},
 						[2]);
-						expect(el).toEqual("<p>twoFFS</p>");
+						expect(el).toEqual("<span key='2'><p>twoFFS</p></span>");
 					});
 					it("should default to ----- if val is empty", function() {
 						var el = mkr({
 							name: "foo",
-							options: [],
+							options: []
 						},
 						[]);
 						expect(el).toEqual("-----");
