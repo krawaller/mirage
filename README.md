@@ -22,8 +22,8 @@ as `propdef`. It looks like the following:
 
     	// for select,multiselect,hasone,hasmany type props
     	makeSelectOption: function(opt), // optional, returns text to use for this option in dropdown
-    	makeValue: function(opt), // optional, returns html to use in value element.
-    	valueProp: "id", // optional, the option prop to use for model attr (defaults to "val")
+    	makeValue: function(opt), // optional, returns html for single option to use in value element.
+    	valueProp: "id", // optional, the option prop to use for model attr (defaults to "val", or "id" for hasone/hasmany)
     	empty: "None", // displayed if value is empty (defaults to "-----")
 
     	// for select,multiselect type props

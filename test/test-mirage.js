@@ -57,7 +57,7 @@ describe("the Mirage object", function() {
 					propdef: {
 						name: "foo",
 						type: "baz",
-						clickevent: {
+						clickEvent: {
 							selector: "p",
 							callback: callback
 						}
@@ -675,5 +675,54 @@ describe("the Mirage object", function() {
 			});
 		});
 		
+		describe("the hasone property",function(){
+			var PropertyHasOneView = Mirage.Property.HasOneView;
+			it("is defined",function(){
+				expect(PropertyHasOneView).toBeDefined();
+			});
+			describe("the instance",function(){
+				var clickedmodelid, collection, view, modelClick, makeValue;
+				collection = new Backbone.Collection([{id:1,name:"one"},{id:2,name:"two"}]);
+				modelClick = function(model){
+					clickedmodelid = model.id;
+				};
+				makeValue = function(model){
+					console.log("NAME",model);
+					return model.attributes.name;
+				};
+				view = new PropertyHasOneView({
+					kind: "value",
+					model: {
+						attributes: {
+							woo: 2
+						},
+						on: function(){}
+					},
+					propdef: {
+						name: "woo",
+						collection: collection,
+						makeValue: makeValue,
+						modelClick: modelClick
+					}
+				});
+				it("should handle model clicks",function(){
+					view.$el.find(".prop-model").click();
+					expect(clickedmodelid).toEqual(2);
+				});
+				it("should set proper propdef",function(){
+					var p = view.propdef;
+					expect(p.options).toEqual(collection.models);
+					expect(p.type).toEqual("hasone");
+					expect(p.clickEvent).toBeDefined();
+					expect(p.clickEvent.selector).toEqual(".prop-model");
+					expect(p.valueProp).toEqual("id");
+					expect(p.makeValue).toBeA(Function);
+					expect(p.makeValue).not.toEqual(makeValue);
+				});
+				it("should draw correct value html",function(){
+					expect(view.$el).toHaveHtml("<span class='prop-model' key='2'>two</span>");
+				});
+			});
+		});
 	});
 });

@@ -19,10 +19,10 @@ this.Mirage = (function(){
 		
 		// The initialize function needs a propdef (Property definition) and a kind (one of label,
 		// value or edit). It will store the propdef on the instance for later access, and build
-		// the correct element depending on the kind. If a `clickevent` was supplied, we bind that
+		// the correct element depending on the kind. If a `clickEvent` was supplied, we bind that
 		// to the element.
 		initialize: function(opts){
-			var o = opts.propdef, click = o.clickevent;
+			var o = opts.propdef, click = o.clickEvent;
 			this.propdef = o;
 			this.setElement(this.buildElement(opts.kind));
 			this.$el.addClass("prop-"+o.type);
@@ -170,8 +170,37 @@ this.Mirage = (function(){
 			});
 			return ret;
 		}
-		
 	});
+	
+	// #### HasOne property view
+	// Inherits from select. Needs a `collection`, will use that as options.
+	// If a `modelclick` callback is given, a clickhandler will be set on the value elem.
+	var PropertyHasOneView = PropertySelectView.extend({
+		initialize: function(opts){
+			var p = opts.propdef;
+			opts.propdef = {
+				options: p.collection.models,
+				type: "hasone",
+				name: p.name,
+				valueProp: "id" || p.valueProp,
+				makeValue: function(model){
+					var str = p.makeValue ? p.makeValue(model) : model.attributes.text;
+					return "<span class='prop-model' key='"+(model.id || model.cid)+"'>"+str+"</span>";
+				}
+			};
+			if (p.modelClick){
+				opts.propdef.clickEvent = {
+					selector: ".prop-model",
+					callback: function(e){
+						var id = $(e.target).attr("key");
+						p.modelClick(p.collection.get(id)||p.collection.getByCid(id));
+					}
+				};
+			}
+			this.constructor.__super__.initialize.call(this,opts);
+		}
+	});
+
 
 
 	var PROPVIEWS = {
@@ -235,7 +264,8 @@ callback: for edit mode,
 			TextView: PropertyTextView,
 			BoolView: PropertyBoolView,
 			SelectView: PropertySelectView,
-			MultiSelectView: PropertyMultiSelectView
+			MultiSelectView: PropertyMultiSelectView,
+			HasOneView: PropertyHasOneView
 		}
 	};
 }());
