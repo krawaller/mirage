@@ -1,5 +1,24 @@
 this.Mirage = (function(){
 
+	// ### Utils
+
+	// Utility function to wrap htmlstring if not exactly 1 tag. Also adds attr and classes.
+	var elementWrapper = function(o){
+		var $el = $(o.content);
+		if (o.force || $el.length !== 1){
+			var tag = o.wraptag || "span";
+			$el = $("<"+tag+">"+o.content+"</"+tag+">");
+		}
+		if (o.attributes){
+			$el.attr(o.attributes);
+		}
+		if (o.classes){
+			$el.addClass(o.classes);
+		}
+		return $el;
+	};
+	
+
 	// ### Property views
 	// These views are used to display a single model property. There are 3 different flavours of display:
 	//
@@ -46,9 +65,11 @@ this.Mirage = (function(){
 		// Used in `buildElement`. Responsible for wrapping content in span (if needed),
 		// and adding relevant css classes.
 		elementWrapper: function(viewkind,proptype,content){
-			var $c = $(content),
-				$el = $c.length == 1 && viewkind !== "value" ? $c : $("<span>"+content+"</span>");
-			return $el.addClass("prop-"+viewkind).addClass("prop-"+proptype+"-"+viewkind);
+			return elementWrapper({
+				force: viewkind === "value",
+				classes: "prop-"+viewkind+" prop-"+proptype+"-"+viewkind,
+				content: content
+			});
 		},
 		
 		// The callback used to update a value propview when the model attribute changes.
@@ -166,41 +187,56 @@ this.Mirage = (function(){
 				}
 			}
 			_.each(sel,function(opt){
-				ret += "<span key='"+opt[valprop]+"'>"+(o.makeValue ? o.makeValue(opt) : opt.text)+"</span>";
+				ret += elementWrapper({
+					content: o.makeValue ? o.makeValue(opt) : opt.text,
+					attributes: {
+						key: opt[valprop]
+					}
+				})[0].outerHTML; //"<span key='"+opt[valprop]+"'>"+(o.makeValue ? o.makeValue(opt) : opt.text)+"</span>";
 			});
 			return ret;
 		}
 	});
 	
-	// #### HasOne property view
-	// Inherits from select. Needs a `collection`, will use that as options.
-	// If a `modelclick` callback is given, a clickhandler will be set on the value elem.
-	var PropertyHasOneView = PropertySelectView.extend({
-		initialize: function(opts){
-			var p = opts.propdef;
-			opts.propdef = {
-				options: p.collection.models,
-				type: "hasone",
-				name: p.name,
-				valueProp: "id" || p.valueProp,
-				makeValue: function(model){
-					var str = p.makeValue ? p.makeValue(model) : model.attributes.text;
-					return "<span class='prop-model' key='"+(model.id || model.cid)+"'>"+str+"</span>";
+	// #### HasOne and HasMany property view
+	// Inherits from select/multiselect. Needs a `collection`, will use that as options.
+	// If a `modelClick` callback is given, a clickhandler will be set on the value element.
+	
+	// Initialization function used in both hasone and hasmany.
+	var relationInitialize = function(opts){
+		var p = opts.propdef;
+		opts.propdef = _.defaults({
+			options: p.collection.models,
+			type: this.type,
+			valueProp: "id" || p.valueProp,
+			makeValue: function(model){
+				var str = p.makeValue ? p.makeValue(model) : model.attributes.text;
+				return "<span class='prop-model' key='"+(model.id || model.cid)+"'>"+str+"</span>";
+			}
+		},p);
+		if (p.modelClick){
+			opts.propdef.clickEvent = {
+				selector: ".prop-model",
+				callback: function(e){
+					var id = $(e.target).attr("key");
+					p.modelClick(p.collection.get(id)||p.collection.getByCid(id));
 				}
 			};
-			if (p.modelClick){
-				opts.propdef.clickEvent = {
-					selector: ".prop-model",
-					callback: function(e){
-						var id = $(e.target).attr("key");
-						p.modelClick(p.collection.get(id)||p.collection.getByCid(id));
-					}
-				};
-			}
-			this.constructor.__super__.initialize.call(this,opts);
 		}
+		this.constructor.__super__.initialize.call(this,opts);
+	};
+	
+	// The HasOne view, inheriting from SelectView
+	var PropertyHasOneView = PropertySelectView.extend({
+		type: "hasone",
+		initialize: relationInitialize
 	});
-
+	
+	// The HasMany view, inheriting from MultiSelectView
+	var PropertyHasManyView = PropertyMultiSelectView.extend({
+		type: "hasmany",
+		initialize: relationInitialize
+	});
 
 
 	var PROPVIEWS = {
@@ -265,7 +301,8 @@ callback: for edit mode,
 			BoolView: PropertyBoolView,
 			SelectView: PropertySelectView,
 			MultiSelectView: PropertyMultiSelectView,
-			HasOneView: PropertyHasOneView
+			HasOneView: PropertyHasOneView,
+			HasManyView: PropertyHasManyView
 		}
 	};
 }());

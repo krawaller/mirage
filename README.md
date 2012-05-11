@@ -31,6 +31,7 @@ as `propdef`. It looks like the following:
 
     	// for hasone,hasmany type props
     	collection: Coll, // the backbone collection instance that we have a relation to
+		modelClick: function(model) // optional, will be called with model when value element is clicked
     }
 
 *WIP*

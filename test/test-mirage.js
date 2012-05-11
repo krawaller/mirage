@@ -572,7 +572,7 @@ describe("the Mirage object", function() {
 							}]
 						},
 						[1,3]);
-						expect(el).toEqual("<span key='1'>one</span><span key='3'>three</span>");
+						expect(el).toEqual('<span key="1">one</span><span key="3">three</span>');
 					});
 					it("should use makeValue function if supplied, and use valueProp", function() {
 						var el = mkr({
@@ -595,7 +595,7 @@ describe("the Mirage object", function() {
 							}
 						},
 						[2]);
-						expect(el).toEqual("<span key='2'><p>twoFFS</p></span>");
+						expect($(el)[0].outerHTML).toEqual('<p key="2">twoFFS</p>');
 					});
 					it("should default to ----- if val is empty", function() {
 						var el = mkr({
@@ -675,7 +675,7 @@ describe("the Mirage object", function() {
 			});
 		});
 		
-		describe("the hasone property",function(){
+		describe("the hasone property view",function(){
 			var PropertyHasOneView = Mirage.Property.HasOneView;
 			it("is defined",function(){
 				expect(PropertyHasOneView).toBeDefined();
@@ -687,7 +687,6 @@ describe("the Mirage object", function() {
 					clickedmodelid = model.id;
 				};
 				makeValue = function(model){
-					console.log("NAME",model);
 					return model.attributes.name;
 				};
 				view = new PropertyHasOneView({
@@ -702,6 +701,7 @@ describe("the Mirage object", function() {
 						name: "woo",
 						collection: collection,
 						makeValue: makeValue,
+						makeSelectOption: "foobar",
 						modelClick: modelClick
 					}
 				});
@@ -712,17 +712,78 @@ describe("the Mirage object", function() {
 				it("should set proper propdef",function(){
 					var p = view.propdef;
 					expect(p.options).toEqual(collection.models);
+					expect(p.collection).toEqual(collection);
 					expect(p.type).toEqual("hasone");
 					expect(p.clickEvent).toBeDefined();
 					expect(p.clickEvent.selector).toEqual(".prop-model");
 					expect(p.valueProp).toEqual("id");
 					expect(p.makeValue).toBeA(Function);
 					expect(p.makeValue).not.toEqual(makeValue);
+					expect(p.makeSelectOption).toBe("foobar");
 				});
 				it("should draw correct value html",function(){
+					expect(view.$el).toBe("span");
+					expect(view.$el).toHaveClass("prop-hasone");
 					expect(view.$el).toHaveHtml("<span class='prop-model' key='2'>two</span>");
 				});
 			});
 		});
+		
+		describe("the hasmany property view",function(){
+			var PropertyHasManyView = Mirage.Property.HasManyView;
+			it("is defined",function(){
+				expect(PropertyHasManyView).toBeDefined();
+			});
+			describe("the instance",function(){
+				var clickedmodelid, collection, view, modelClick, makeValue;
+				collection = new Backbone.Collection([{id:1,name:"one"},{id:2,name:"two"},{id:3,name:"three"}]);
+				modelClick = function(model){
+					clickedmodelid = model.id;
+				};
+				makeValue = function(model){
+					return model.attributes.name;
+				};
+				view = new PropertyHasManyView({
+					kind: "value",
+					model: {
+						attributes: {
+							woo: [1,3]
+						},
+						on: function(){}
+					},
+					propdef: {
+						name: "woo",
+						collection: collection,
+						makeValue: makeValue,
+						makeSelectOption: "foobar",
+						modelClick: modelClick
+					}
+				});
+				it("should handle model clicks",function(){
+					view.$el.find(".prop-model").eq(0).click();
+					expect(clickedmodelid).toEqual(1);
+					view.$el.find(".prop-model").eq(1).click();
+					expect(clickedmodelid).toEqual(3);
+				});
+				it("should set proper propdef",function(){
+					var p = view.propdef;
+					expect(p.options).toEqual(collection.models);
+					expect(p.collection).toEqual(collection);
+					expect(p.type).toEqual("hasmany");
+					expect(p.clickEvent).toBeDefined();
+					expect(p.clickEvent.selector).toEqual(".prop-model");
+					expect(p.valueProp).toEqual("id");
+					expect(p.makeValue).toBeA(Function);
+					expect(p.makeValue).not.toEqual(makeValue);
+					expect(p.makeSelectOption).toBe("foobar");
+				});
+				it("should draw correct value html",function(){
+					expect(view.$el).toBe("span");
+					expect(view.$el).toHaveClass("prop-hasmany");
+					expect(view.$el).toHaveHtml("<span class='prop-model' key='1'>one</span><span class='prop-model' key='3'>three</span>");
+				});
+			});
+		});
+		
 	});
 });
