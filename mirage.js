@@ -2,61 +2,74 @@ this.Mirage = (function(){
 	
 	var PropertyBaseView = Backbone.View.extend({
 		tagName: "span",
-		LabelElement: function(){
-			var o = this.propdef;
-			return $("<span class='prop-label prop-"+o.type+"-label'>"+(o.label||o.name)+"</span>");
+		buildElement: function(viewkind){
+			var o = this.propdef,
+				val = this.model.attributes[o.name],
+				content = this[viewkind+"Html"](o,val);
+			if (viewkind === "value"){
+				this.model.on("change:"+o.name,this.updateValueElement);
+			}
+			return this.elementWrapper(viewkind,o.type,content);
 		},
-		ValueElement: function(){
-			var o = this.propdef;
-			return $("<span class='prop-val prop-"+o.type+"-val'>"+o.val+"</span>");
+		elementWrapper: function(viewkind,proptype,content){
+			var $c = $(content),
+				$el = $c.length == 1 && viewkind !== "value" ? $c : $("<span>"+content+"</span>");
+			return $el.addClass("prop-"+viewkind).addClass("prop-"+proptype+"-"+viewkind);
+		},
+		updateValueElement: function(){
+			this.$el.html(this.valueHtml(this.propdef,this.model.attributes[this.propdef.name]));
+		},
+		labelHtml: function(o){
+			return o.label||o.name;
+		},
+		valueHtml: function(o,val){
+			return val;
 		},
 		getValue: function(){
-			return this.$("input.prop-edit").val();
+			return this.$("input.prop-edit-ctrl").val();
 		},
 		initialize: function(opts){ // must have a propdef
 			this.propdef = opts.propdef;
+			this.setElement(this.buildElement(opts.kind));
 			this.$el.addClass("prop-"+opts.propdef.type);
 		}
 	});
 	var PropertyTextView = PropertyBaseView.extend({
-		EditElement: function(){
-			var o = this.propdef;
-			return $("<input name='"+o.name+"' type='text' class='prop-edit prop-text-edit' value='"+o.val+"'></input>");
+		editHtml: function(o){
+			return "<input name='"+o.name+"' type='text' class='prop-edit-ctrl' value='"+o.val+"'></input>";
 		}
 	});
 	var PropertyBoolView = PropertyBaseView.extend({
-		EditElement: function(){
-			var o = this.propdef;
-			return $("<input name='"+o.name+"' type='checkbox' class='prop-edit prop-checkbox-edit' value='"+o.name+"' "+(o.val?"checked='checked'":"")+"></input>");
+		editHtml: function(o){
+			return "<input name='"+o.name+"' type='checkbox' class='prop-edit-ctrl' value='"+o.name+"' "+(o.val?"checked='checked'":"")+"></input>";
 		},
-		ValueElement: function(){
-			var o = this.propdef, txt = o.val ? o.truetext || "&radic;" : o.falsetext || "X";
-			return $("<span class='prop-val prop-checkbox-val'>"+txt+"</span>");
+		valueHtml: function(o,val){
+			return "<span class='prop-bool-"+(val?'true':'false')+"'>"+(val ? o.truetext || "yes" : o.falsetext || "no")+"</span>";
 		}
 	});
 	var PropertySelectView = PropertyBaseView.extend({
-		EditElement: function(){ // o has name,val,options
-			var o = this.propdef, optstr = "", opts = o.options;
+		editHtml: function(o){ // o has name,val,options
+			var optstr = "", opts = o.options;
 			for(var i=0,l=opts.length;i<l;i++){
 				var opt = opts[i];
 				optstr += "<option value='"+opt.val+"'"+(opt.val===o.val?" selected='selected'":"")+">"+opt.text+"</option>";
 			}
-			return $("<select class='prop-edit prop-select-edit' name='"+o.name+"'>"+optstr+"</select>");
+			return "<select class='prop-edit-ctrl' name='"+o.name+"'>"+optstr+"</select>";
 		},
-		ValueElement: function(){
-			var o = this.propdef, opt, opts = o.options;
+		valueHtml: function(o,val){
+			var opt, opts = o.options;
 			for(var i=0,l=opts.length;i<l;i++){
-				if (o.val === opts[i].val){
+				if (val === opts[i].val){
 					opt = opts[i];
 					break;
 				}
 			}
-			return $("<span class='prop-val prop-select-val'>"+opt.text+"</span>");
+			return opt.text;
 		}
 	});
-	
-	
-	
+
+
+
 	var PROPVIEWS = {
 		text: PropertyTextView
 	};

@@ -1,5 +1,4 @@
 jasmine.Matchers.prototype.toBeAFunction = function() {
-	console.log("WTF",this.actual,(this.actual||{}).toString())
 	if (!this.actual){
 		return true;
 	}
