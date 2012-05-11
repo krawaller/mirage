@@ -94,13 +94,13 @@ this.Mirage = (function(){
 		
 		// Returns the current value of the edit element control. Used in the Mirage ModelView to 
 		// collect all entered values upon form submission.
-		getValue: function(){
+		getInputValue: function(){
 			return this.$("input.prop-edit-ctrl").val();
 		},
 		
 		// We don't need to do anything here, as the `initialize` function took care of building the 
 		// element. The only flavour that might need to change is *value*, and that is done through
-		// an event listener on the model.
+		// an event listener on the model. So `render` is a noop.
 		render: function(){
 			return this;
 		}
@@ -115,14 +115,14 @@ this.Mirage = (function(){
 	});
 	
 	// #### Boolean property view
-	// For *value*, will render `truetext`/`falsetext` from `propdef` (or default yes/no). For *edit* a
+	// For *value*, will render `trueText`/`falseText` from `propdef` (or default yes/no). For *edit* a
 	// simple checkbox is shown.
 	var PropertyBoolView = PropertyBaseView.extend({
 		editHtml: function(o){
 			return "<input name='"+o.name+"' type='checkbox' class='prop-edit-ctrl' value='"+o.name+"' "+(o.val?"checked='checked'":"")+"></input>";
 		},
 		valueHtml: function(o,val){
-			return "<span class='prop-bool-"+(val?'true':'false')+"'>"+(val ? o.truetext || "yes" : o.falsetext || "no")+"</span>";
+			return "<span class='prop-bool-"+(val?'true':'false')+"'>"+(val ? o.trueText || "yes" : o.falseText || "no")+"</span>";
 		}
 	});
 	
@@ -130,6 +130,7 @@ this.Mirage = (function(){
 	// Used for properties where the value is one of a predefined list. This is list is supplied as an
 	// `options` array in the `propdef`. You can also specify the `valueProp` to be used, defaulting to *val*.
 	var PropertySelectView = PropertyBaseView.extend({
+		
 		// For *edit*, a select control is shown. If a `makeSelectOption` is supplied in the `propdef`,
 		// that will be used to generate text for the dropdown. Otherwise the option's `text` property
 		// is used.
@@ -142,6 +143,7 @@ this.Mirage = (function(){
 			}
 			return "<select class='prop-edit-ctrl' name='"+o.name+"'>"+optstr+"</select>";
 		},
+		
 		// The *value* renderer will find the correct option depending on
 		// the model's current value and display it. If a `makeValue` function is supplied in the `propdef`,
 		// that will be used to build the output from the option. Otherwise the option's `text` property

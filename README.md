@@ -11,14 +11,17 @@ as `propdef`. It looks like the following:
     propdef = {
     	name: "zipcode", // corresponds to the attr in the model
     	type: "text", // so far: text/bool/select
-    	clickevent: { // optional, will be bound to the value element
+    	clickEvent: { // optional, will be bound to the value element
     		selector: ".item", // optional, will be used in delegation
     		callback: function(e) // will be bound to the click event
     	},
 
+    	// for text-type
+    	hintText: "enter your name", // will be set to the edit input element
+
     	// for bool-type props
-    	truetext: "Indeed!", // for use in a value element if value is true (defaults to yes)
-    	falsetext: "nope", // for use in a value element if value is false (defaults to no)
+    	trueText: "Indeed!", // for use in a value element if value is true (defaults to yes)
+    	falseText: "nope", // for use in a value element if value is false (defaults to no)
 
     	// for select,multiselect,hasone,hasmany type props
     	makeSelectOption: function(opt), // optional, returns text to use for this option in dropdown

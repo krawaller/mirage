@@ -225,13 +225,13 @@ describe("the Mirage object", function() {
 						expect(label).toEqual("woo");
 					});
 				});
-				describe("the getValue function", function() {
+				describe("the getInputValue function", function() {
 					view.$el.html("<input class='prop-edit' val='bar'></input><input class='prop-edit-ctrl' value='foo'></input>");
 					it("is defined", function() {
-						expect(view.getValue).toBeAFunction();
+						expect(view.getInputValue).toBeAFunction();
 					});
 					it("returns the value from the textbox with correct class", function() {
-						expect(view.getValue()).toEqual("foo");
+						expect(view.getInputValue()).toEqual("foo");
 					});
 				});
 				describe("the render function", function() {
@@ -349,18 +349,18 @@ describe("the Mirage object", function() {
 						expect(label).toHaveText("no");
 						expect(label).toHaveClass("prop-bool-false");
 					});
-					it("uses give falsetext for false", function() {
+					it("uses give falseText for false", function() {
 						var label = $(mkr({
-							falsetext: "nej",
-							truetext: "ja"
+							falseText: "nej",
+							trueText: "ja"
 						},
 						false));
 						expect(label).toHaveText("nej");
 					});
-					it("uses give truetext for true", function() {
+					it("uses give trueText for true", function() {
 						var label = $(mkr({
-							falsetext: "nej",
-							truetext: "ja"
+							falseText: "nej",
+							trueText: "ja"
 						},
 						true));
 						expect(label).toHaveText("ja");
@@ -741,7 +741,7 @@ describe("the Mirage object", function() {
 					clickedmodelid = model.id;
 				};
 				makeValue = function(model){
-					return model.attributes.name;
+					return model.attributes.name+"FFS";
 				};
 				view = new PropertyHasManyView({
 					kind: "value",
@@ -780,7 +780,7 @@ describe("the Mirage object", function() {
 				it("should draw correct value html",function(){
 					expect(view.$el).toBe("span");
 					expect(view.$el).toHaveClass("prop-hasmany");
-					expect(view.$el).toHaveHtml("<span class='prop-model' key='1'>one</span><span class='prop-model' key='3'>three</span>");
+					expect(view.$el).toHaveHtml("<span class='prop-model' key='1'>oneFFS</span><span class='prop-model' key='3'>threeFFS</span>");
 				});
 			});
 		});
