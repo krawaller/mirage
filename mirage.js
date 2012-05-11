@@ -26,7 +26,7 @@ this.Mirage = (function(){
 			this.$el.addClass("prop-"+opts.propdef.type);
 		},
 		
-		// Called from initialize with viewkind (label/value/edit) as argument.
+		// Called from `initialize` with viewkind (label/value/edit) as argument.
 		// Will call &lt;viewkind&gt;Html to create content, and pass along to elementWrapper
 		buildElement: function(viewkind){
 			var o = this.propdef,
@@ -38,7 +38,7 @@ this.Mirage = (function(){
 			return this.elementWrapper(viewkind,o.type,content);
 		},
 		
-		// Used in buildElement. Responsible for wrapping content in span (if needed),
+		// Used in `buildElement`. Responsible for wrapping content in span (if needed),
 		// and adding relevant css classes.
 		elementWrapper: function(viewkind,proptype,content){
 			var $c = $(content),
@@ -48,13 +48,13 @@ this.Mirage = (function(){
 		
 		// The callback used to update a value propview when the model attribute changes.
 		// This default implementation will simply repopulate the element with a new
-		// call to valueHtml.
+		// call to `valueHtml`.
 		updateValueElement: function(){
 			this.$el.html(this.valueHtml(this.propdef,this.model.attributes[this.propdef.name]));
 		},
 		
 		// Default implementation of generating content for a label element. Will simply use the name
-		// of the property, or the 'label' property of the propdef if one is provided.
+		// of the property, or the `label` property of the `propdef` if one is provided.
 		labelHtml: function(propdef){
 			return propdef.label||propdef.name;
 		},
@@ -70,6 +70,13 @@ this.Mirage = (function(){
 		// collect all entered values upon form submission.
 		getValue: function(){
 			return this.$("input.prop-edit-ctrl").val();
+		},
+		
+		// We don't need to do anything here, as the `initialize` function took care of building the 
+		// element. The only flavour that might need to change is *value*, and that is done through
+		// an event listener on the model.
+		render: function(){
+			return this;
 		}
 	});
 	
@@ -82,7 +89,7 @@ this.Mirage = (function(){
 	});
 	
 	// #### Boolean property view
-	// For *value*, will render *truetext*/*falsetext* from *propdef* (or default yes/no). For *edit* a
+	// For *value*, will render `truetext`/`falsetext` from `propdef` (or default yes/no). For *edit* a
 	// simple checkbox is shown.
 	var PropertyBoolView = PropertyBaseView.extend({
 		editHtml: function(o){
@@ -95,24 +102,23 @@ this.Mirage = (function(){
 	
 	// #### Selection property view
 	// Used for properties where the value is one of a predefined list. This is list is supplied as an
-	// *options* array in the *propdef*.
+	// `options` array in the `propdef`. You can also specify the `valueProp` to be used, defaulting to *val*.
 	var PropertySelectView = PropertyBaseView.extend({
-		// For *edit*, a select control is shown. If a *makeSelectOption* is supplied in the propdef,
-		// that will be used to generate text for the dropdown. Otherwise the option's *text* property
+		// For *edit*, a select control is shown. If a `makeSelectOption` is supplied in the `propdef`,
+		// that will be used to generate text for the dropdown. Otherwise the option's `text` property
 		// is used.
 		editHtml: function(o,val){
 			var optstr = "", opts = o.options, valprop = o.valueProp || "val";
 			for(var i=0,l=opts.length;i<l;i++){
 				var opt = opts[i],
 					str = o.makeSelectOption ? o.makeSelectOption(opt) : opt.text;
-				console.log("FFS",valprop,val,opt[valprop],val === opt[valprop]);
 				optstr += "<option value='"+opt[valprop]+"'"+(opt[valprop]===val?" selected='selected'":"")+">"+str+"</option>";
 			}
 			return "<select class='prop-edit-ctrl' name='"+o.name+"'>"+optstr+"</select>";
 		},
 		// The *value* renderer will find the correct option depending on
-		// the model's current value and display it. If a *makeValue* function is supplied in the *propdef*,
-		// that will be used to build the output from the option. Otherwise the option's *text* property
+		// the model's current value and display it. If a `makeValue` function is supplied in the `propdef`,
+		// that will be used to build the output from the option. Otherwise the option's `text` property
 		// is used.
 		valueHtml: function(o,val){
 			var opt, opts = o.options, valprop = o.valueProp || "val";

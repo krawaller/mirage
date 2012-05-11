@@ -188,6 +188,11 @@ describe("the Mirage object",function(){
 					expect(view.getValue()).toEqual("foo");
 				});
 			});
+			describe("the render function",function(){
+				it("should return the instance",function(){
+					expect(view.render()).toEqual(view);
+				});
+			})
 		});
 	});
 	
