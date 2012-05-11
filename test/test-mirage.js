@@ -421,28 +421,20 @@ describe("the Mirage object", function() {
 						2);
 						expect(el).toEqual("twoFFS");
 					});
-					it("should use makeDefault ", function() {
+					it("should default to ----- if val is empty", function() {
 						var el = mkr({
 							name: "foo",
-							valueProp: "num",
-							options: [{
-								text: 'one',
-								num: 1
-							},
-							{
-								text: 'two',
-								num: 2
-							},
-							{
-								text: 'three',
-								num: 3
-							}],
-							makeValue: function(opt) {
-								return opt.text + "FFS";
-							}
-						},
-						2);
-						expect(el).toEqual("twoFFS");
+							options: [],
+						});
+						expect(el).toEqual("-----");
+					});
+					it("should use 'empty' prop if val is empty", function() {
+						var el = mkr({
+							name: "foo",
+							options: [],
+							empty: "None"
+						});
+						expect(el).toEqual("None");
 					});
 				});
 				describe("the edit html maker", function() {
@@ -503,5 +495,159 @@ describe("the Mirage object", function() {
 				});
 			});
 		});
+		
+		describe("the property multiselect view",function(){
+			var PropertyMultiSelectView = Mirage.Property.MultiSelectView;
+			describe("the produced instance", function() {
+				var view = new PropertyMultiSelectView({
+					propdef: {
+						name: "foo",
+						options: [{
+							text: 'one',
+							val: 1
+						},
+						{
+							text: 'two',
+							val: 2
+						},
+						{
+							text: 'three',
+							val: 3
+						}]
+					},
+					kind: "label",
+					model: {
+						attributes: {
+							foo: [2,3]
+						}
+					}
+				});
+				it("is a PropBaseView-produced backbone view instance", function() {
+					expect(view).toBeA(PropertyMultiSelectView);
+					expect(view).toBeA(Mirage.Property.BaseView);
+					expect(view).toBeA(Backbone.View);
+				});
+				describe("the value html maker", function() {
+					var mkr = view.valueHtml;
+					it("returns the correct element", function() {
+						var el = mkr({
+							name: "foo",
+							options: [{
+								text: 'one',
+								val: 1
+							},
+							{
+								text: 'two',
+								val: 2
+							},
+							{
+								text: 'three',
+								val: 3
+							}]
+						},
+						[1,3]);
+						expect(el).toEqual("<span>one</span><span>three</span>");
+					});
+					it("should use makeValue function if supplied, and use valueProp", function() {
+						var el = mkr({
+							name: "foo",
+							valueProp: "num",
+							options: [{
+								text: 'one',
+								num: 1
+							},
+							{
+								text: 'two',
+								num: 2
+							},
+							{
+								text: 'three',
+								num: 3
+							}],
+							makeValue: function(opt) {
+								return "<p>"+opt.text + "FFS</p>";
+							}
+						},
+						[2]);
+						expect(el).toEqual("<p>twoFFS</p>");
+					});
+					it("should default to ----- if val is empty", function() {
+						var el = mkr({
+							name: "foo",
+							options: [],
+						},
+						[]);
+						expect(el).toEqual("-----");
+					});
+					it("should use 'empty' prop if val is empty", function() {
+						var el = mkr({
+							name: "foo",
+							options: [],
+							empty: "None"
+						},
+						[]);
+						expect(el).toEqual("None");
+					});
+				});
+				describe("the edit html maker", function() {
+					var mkr = view.editHtml;
+					it("is defined", function() {
+						expect(mkr).toBeDefined();
+					});
+					it("returns the correct value", function() {
+						var el = mkr({
+							name: "foo",
+							options: [{
+								text: 'one',
+								val: 1
+							},
+							{
+								text: 'two',
+								val: 2
+							},
+							{
+								text: 'three',
+								val: 3
+							}]
+						},
+						[2,3]),
+							$el = $(el);
+						expect($el).toBe("select");
+						expect($el).toHaveAttr("name", "foo");
+						expect($el).toHaveAttr("multiple","multiple");
+						expect($el).toHaveHtml("<option value='1'>one</option><option value='2' selected='selected'>two</option><option value='3' selected='selected'>three</option>");
+						expect($el).toHaveClass("prop-edit-ctrl");
+					});
+					it("should use makeSelectOption function if supplied, and use valueProp", function() {
+						var el = mkr({
+							name: "foo",
+							valueProp: "id",
+							options: [{
+								text: 'one',
+								id: 1
+							},
+							{
+								text: 'two',
+								id: 2
+							},
+							{
+								text: 'three',
+								id: 3
+							}],
+							makeSelectOption: function(opt) {
+								return opt.text + "FFS";
+							}
+						},
+						[1]),
+							$el = $(el);
+						expect($el).toBe("select");
+						expect($el).toHaveAttr("name", "foo");
+						expect($el).toHaveHtml("<option value='1' selected='selected'>oneFFS</option><option value='2'>twoFFS</option><option value='3'>threeFFS</option>");
+						expect($el).toHaveClass("prop-edit-ctrl");
+					});
+				});
+			});
+		});
+		
 	});
 });

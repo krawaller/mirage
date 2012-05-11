@@ -121,6 +121,9 @@ this.Mirage = (function(){
 		// that will be used to build the output from the option. Otherwise the option's `text` property
 		// is used.
 		valueHtml: function(o,val){
+			if (!val){
+				return o.empty || "-----";
+			}
 			var opt, opts = o.options, valprop = o.valueProp || "val";
 			for(var i=0,l=opts.length;i<l;i++){
 				if (val === opts[i][valprop]){
@@ -135,6 +138,35 @@ this.Mirage = (function(){
 		}
 	});
 
+	// #### MultiSelect property view
+	// Same as select, but allows multiple values. Exact same API.
+	var PropertyMultiSelectView = PropertyBaseView.extend({
+		editHtml: function(o,val){
+			var optstr = "", opts = o.options, valprop = o.valueProp || "val";
+			for(var i=0,l=opts.length;i<l;i++){
+				var opt = opts[i],
+					str = o.makeSelectOption ? o.makeSelectOption(opt) : opt.text;
+				optstr += "<option value='"+opt[valprop]+"'"+(_.indexOf(val,opt[valprop]) !== -1 ?" selected='selected'":"")+">"+str+"</option>";
+			}
+			return "<select class='prop-edit-ctrl' name='"+o.name+"' multiple='multiple'>"+optstr+"</select>";
+		},
+		valueHtml: function(o,val){
+			if (!val || !val.length){
+				return o.empty || "-----";
+			}
+			var sel = [], ret = "", opts = o.options, valprop = o.valueProp || "val"
+			for(var i=0,l=opts.length;i<l;i++){
+				if (_.indexOf(val,opts[i][valprop]) !== -1){
+					sel.push(opts[i]);
+				}
+			}
+			_.each(sel,function(opt){
+				ret += o.makeValue ? o.makeValue(opt) : "<span>"+opt.text+"</span>";
+			});
+			return ret;
+		}
+		
+	});
 
 
 	var PROPVIEWS = {
@@ -197,7 +229,8 @@ callback: for edit mode,
 			BaseView: PropertyBaseView,
 			TextView: PropertyTextView,
 			BoolView: PropertyBoolView,
-			SelectView: PropertySelectView
+			SelectView: PropertySelectView,
+			MultiSelectView: PropertyMultiSelectView
 		}
 	};
 }());
