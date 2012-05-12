@@ -1,0 +1,5 @@
+
+Build steps
+
+ * generate index from README.me using: cat README.md | mdown > index.html
+ * generate annotated sourcecode using: docco mirage.js
