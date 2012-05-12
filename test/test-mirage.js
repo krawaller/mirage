@@ -43,7 +43,30 @@ describe("the Mirage object", function() {
 				expect(instance.mynewelement).toEqual("valueoreditorlabelFFS");
 				expect(addedclass).toEqual("prop-sometype");
 			});
-			it("should handle clicks!",function(){
+			describe("the updateValueElement function", function() {
+				var htmlspy = jasmine.createSpy(),
+					context = {
+					$el: {
+						html: htmlspy
+					},
+					propdef: {
+						name: "foo"
+					},
+					model: {
+						attributes: {
+							foo: "BAR"
+						}
+					},
+					valueHtml: function(o, val) {
+						return o.name + val;
+					}
+				};
+				PropBaseView.prototype.updateValueElement.call(context);
+				it("should set the elements html to result from valueHtml call",function(){
+					expect(htmlspy).toHaveBeenCalledWith("fooBAR");
+				});
+			});
+			describe("the clickhandler",function(){
 				var p = 0, callback = function(){
 						p++;
 					},v = new PropBaseView({
@@ -64,10 +87,44 @@ describe("the Mirage object", function() {
 					}
 				});
 				v.$el.html("<p>woo</p>");
-				v.$el.click();
-				expect(p).toEqual(0);
-				v.$el.find("p").click();
-				expect(p).toEqual(1);
+				it("should handle clicks!",function(){
+					v.$el.click();
+					expect(p).toEqual(0);
+					v.$el.find("p").click();
+					expect(p).toEqual(1);
+				});
+			});
+			describe("the label html maker", function() {
+				var mkr = PropBaseView.prototype.labelHtml;
+				it("is defined", function() {
+					expect(mkr).toBeDefined();
+				});
+				it("returns the correct value", function() {
+					var label = mkr({
+						name: "somename"
+					});
+					expect(label).toEqual("somename");
+				});
+				it("should use label if provided", function() {
+					var label = mkr({
+						name: "somename",
+						label: "Some Name"
+					});
+					expect(label).toEqual("Some Name");
+				});
+			});
+			describe("the value html maker", function() {
+				var mkr = PropBaseView.prototype.valueHtml;
+				it("is defined", function() {
+					expect(mkr).toBeDefined();
+				});
+				it("returns the correct value", function() {
+					var label = mkr({
+						val: "someval"
+					},
+					"woo"); // 2nd arg is current val from model, should use that!
+					expect(label).toEqual("woo");
+				});
 			});
 			describe("the created instance", function() {
 				var view = new PropBaseView({
@@ -172,59 +229,6 @@ describe("the Mirage object", function() {
 						expect(triggerspy).toHaveBeenCalledWith("change:someprop", updateval);
 					});
 				});
-				describe("the updateValueElement function", function() {
-					var htmlspy = jasmine.createSpy(),
-						context = {
-						$el: {
-							html: htmlspy
-						},
-						propdef: {
-							name: "foo"
-						},
-						model: {
-							attributes: {
-								foo: "BAR"
-							}
-						},
-						valueHtml: function(o, val) {
-							return o.name + val;
-						}
-					};
-					view.updateValueElement.call(context);
-					expect(htmlspy).toHaveBeenCalledWith("fooBAR");
-				});
-				describe("the label html maker", function() {
-					var mkr = view.labelHtml;
-					it("is defined", function() {
-						expect(mkr).toBeDefined();
-					});
-					it("returns the correct value", function() {
-						var label = mkr({
-							name: "somename"
-						});
-						expect(label).toEqual("somename");
-					});
-					it("should use label if provided", function() {
-						var label = mkr({
-							name: "somename",
-							label: "Some Name"
-						});
-						expect(label).toEqual("Some Name");
-					});
-				});
-				describe("the value html maker", function() {
-					var mkr = view.valueHtml;
-					it("is defined", function() {
-						expect(mkr).toBeDefined();
-					});
-					it("returns the correct value", function() {
-						var label = mkr({
-							val: "someval"
-						},
-						"woo"); // 2nd arg is current val from model, should use that!
-						expect(label).toEqual("woo");
-					});
-				});
 				describe("the getInputValue function", function() {
 					view.$el.html("<input class='prop-edit' val='bar'></input><input class='prop-edit-ctrl' value='foo'></input>");
 					it("is defined", function() {
@@ -240,12 +244,88 @@ describe("the Mirage object", function() {
 					});
 				});
 			});
+			describe("the labelPosition option set to before",function(){
+				var view = new PropBaseView({
+					kind: "value",
+					model: {
+						attributes: {
+							foo: "BAR"
+						},
+						on: function() {}
+					},
+					propdef: {
+						name: "foo",
+						type: "baz",
+						labelPosition: "before"
+					}
+				});
+				it("adds a label before the element",function(){
+					expect(view.$el).toHaveHtml("<span class='prop-label prop-baz-label'>foo</span>BAR");
+				});
+			});
+			describe("the labelPosition option set to after",function(){
+				var view = new PropBaseView({
+					kind: "value",
+					model: {
+						attributes: {
+							foo: "BAR"
+						},
+						on: function() {}
+					},
+					propdef: {
+						name: "foo",
+						type: "baz",
+						labelPosition: "after"
+					}
+				});
+				it("adds a label after the element",function(){
+					expect(view.$el).toHaveHtml("BAR<span class='prop-label prop-baz-label'>foo</span>");
+				});
+			});
+			describe("the labelPosition option for edit element",function(){
+				var view = new PropBaseView({
+					kind: "edit",
+					model: {
+						attributes: {
+							fooo: "BAAAR"
+						},
+						on: function() {}
+					},
+					propdef: {
+						name: "fooo",
+						type: "moo",
+						label: "WEEE",
+						labelPosition: "after"
+					}
+				});
+				it("adds a label after the element",function(){
+					expect(view.$el).toHaveHtml("BAAAR<label for='prop-moo-edit-fooo' class='prop-label prop-moo-label'>WEEE</label>");
+				});
+			});
 		});
 
 		describe("the PropertyTextView", function() {
 			var PropertyTextView = Mirage.Property.TextView;
 			it("is defined", function() {
 				expect(typeof Mirage).toBeAFunction();
+			});
+			describe("the edit html maker", function() {
+				var mkr = PropertyTextView.prototype.editHtml;
+				it("is defined", function() {
+					expect(mkr).toBeDefined();
+				});
+				it("returns the correct value", function() {
+					var label = $(mkr({
+						name: "foo",
+						val: "baz"
+					},
+					"WOO"));
+					expect(label).toBe("input");
+					expect(label).toHaveAttr("type", "text");
+					expect(label).toHaveAttr("name", "foo");
+					expect(label).toHaveValue("WOO");
+					expect(label).toHaveClass("prop-edit-ctrl");
+				});
 			});
 			describe("the produced instance", function() {
 				var view = new PropertyTextView({
@@ -265,24 +345,6 @@ describe("the Mirage object", function() {
 					expect(view).toBeA(Mirage.Property.BaseView);
 					expect(view).toBeA(Backbone.View);
 				});
-				describe("the edit html maker", function() {
-					var mkr = view.editHtml;
-					it("is defined", function() {
-						expect(mkr).toBeDefined();
-					});
-					it("returns the correct value", function() {
-						var label = $(mkr({
-							name: "foo",
-							val: "baz"
-						},
-						"WOO"));
-						expect(label).toBe("input");
-						expect(label).toHaveAttr("type", "text");
-						expect(label).toHaveAttr("name", "foo");
-						expect(label).toHaveValue("WOO");
-						expect(label).toHaveClass("prop-edit-ctrl");
-					});
-				});
 			});
 		});
 
@@ -290,6 +352,63 @@ describe("the Mirage object", function() {
 			var PropertyBoolView = Mirage.Property.BoolView;
 			it("is defined", function() {
 				expect(typeof Mirage).toBeAFunction();
+			});
+			describe("the edit element maker", function() {
+				var mkr = PropertyBoolView.prototype.editHtml;
+				it("is defined", function() {
+					expect(mkr).toBeDefined();
+				});
+				it("returns the correct value", function() {
+					var label = $(mkr({
+						name: "foo",
+						val: true
+					}));
+					expect(label).toBeA($);
+					expect(label).toBe("input");
+					expect(label).toHaveAttr("type", "checkbox");
+					expect(label).toHaveAttr("name", "foo");
+					expect(label).toHaveAttr("checked", "checked");
+					expect(label).toHaveValue("foo");
+					expect(label).toHaveClass("prop-edit-ctrl");
+				});
+				it("doesnt have checked attr if val is false", function() {
+					var label = $(mkr({
+						name: "foo",
+						val: false
+					}));
+					expect(label).not.toHaveAttr("checked", "checked");
+				});
+			});
+			describe("the value element maker", function() {
+				var mkr = PropertyBoolView.prototype.valueHtml;
+				it("returns the correct value", function() {
+					var label = $(mkr({},
+					true));
+					expect(label.text()).toEqual("yes"); // root sign, affirmative sign
+					expect(label).toHaveClass("prop-bool-true");
+				});
+				it("has X for text when value is false", function() {
+					var label = $(mkr({},
+					false));
+					expect(label).toHaveText("no");
+					expect(label).toHaveClass("prop-bool-false");
+				});
+				it("uses give falseText for false", function() {
+					var label = $(mkr({
+						falseText: "nej",
+						trueText: "ja"
+					},
+					false));
+					expect(label).toHaveText("nej");
+				});
+				it("uses give trueText for true", function() {
+					var label = $(mkr({
+						falseText: "nej",
+						trueText: "ja"
+					},
+					true));
+					expect(label).toHaveText("ja");
+				});
 			});
 			describe("the produced instance", function() {
 				var view = new PropertyBoolView({
@@ -309,63 +428,6 @@ describe("the Mirage object", function() {
 					expect(view).toBeA(Mirage.Property.BaseView);
 					expect(view).toBeA(Backbone.View);
 				});
-				describe("the edit element maker", function() {
-					var mkr = view.editHtml;
-					it("is defined", function() {
-						expect(mkr).toBeDefined();
-					});
-					it("returns the correct value", function() {
-						var label = $(mkr({
-							name: "foo",
-							val: true
-						}));
-						expect(label).toBeA($);
-						expect(label).toBe("input");
-						expect(label).toHaveAttr("type", "checkbox");
-						expect(label).toHaveAttr("name", "foo");
-						expect(label).toHaveAttr("checked", "checked");
-						expect(label).toHaveValue("foo");
-						expect(label).toHaveClass("prop-edit-ctrl");
-					});
-					it("doesnt have checked attr if val is false", function() {
-						var label = $(mkr({
-							name: "foo",
-							val: false
-						}));
-						expect(label).not.toHaveAttr("checked", "checked");
-					});
-				});
-				describe("the value element maker", function() {
-					var mkr = view.valueHtml;
-					it("returns the correct value", function() {
-						var label = $(mkr({},
-						true));
-						expect(label.text()).toEqual("yes"); // root sign, affirmative sign
-						expect(label).toHaveClass("prop-bool-true");
-					});
-					it("has X for text when value is false", function() {
-						var label = $(mkr({},
-						false));
-						expect(label).toHaveText("no");
-						expect(label).toHaveClass("prop-bool-false");
-					});
-					it("uses give falseText for false", function() {
-						var label = $(mkr({
-							falseText: "nej",
-							trueText: "ja"
-						},
-						false));
-						expect(label).toHaveText("nej");
-					});
-					it("uses give trueText for true", function() {
-						var label = $(mkr({
-							falseText: "nej",
-							trueText: "ja"
-						},
-						true));
-						expect(label).toHaveText("ja");
-					});
-				});
 			});
 		});
 
@@ -373,6 +435,122 @@ describe("the Mirage object", function() {
 			var PropertySelectView = Mirage.Property.SelectView;
 			it("is defined", function() {
 				expect(PropertySelectView).toBeAFunction();
+			});
+			describe("the value html maker", function() {
+				var mkr = PropertySelectView.prototype.valueHtml;
+				it("returns the correct element", function() {
+					var el = mkr({
+						name: "foo",
+						options: [{
+							text: 'one',
+							val: 1
+						},
+						{
+							text: 'two',
+							val: 2
+						},
+						{
+							text: 'three',
+							val: 3
+						}]
+					},
+					3);
+					expect(el).toEqual("three");
+				});
+				it("should use makeValue function if supplied, and use valueProp", function() {
+					var el = mkr({
+						name: "foo",
+						valueProp: "num",
+						options: [{
+							text: 'one',
+							num: 1
+						},
+						{
+							text: 'two',
+							num: 2
+						},
+						{
+							text: 'three',
+							num: 3
+						}],
+						makeValue: function(opt) {
+							return opt.text + "FFS";
+						}
+					},
+					2);
+					expect(el).toEqual("twoFFS");
+				});
+				it("should default to ----- if val is empty", function() {
+					var el = mkr({
+						name: "foo",
+						options: []
+					});
+					expect(el).toEqual("-----");
+				});
+				it("should use 'empty' prop if val is empty", function() {
+					var el = mkr({
+						name: "foo",
+						options: [],
+						empty: "None"
+					});
+					expect(el).toEqual("None");
+				});
+			});
+			describe("the edit html maker", function() {
+				var mkr = PropertySelectView.prototype.editHtml;
+				it("is defined", function() {
+					expect(mkr).toBeDefined();
+				});
+				it("returns the correct value", function() {
+					var el = mkr({
+						name: "foo",
+						options: [{
+							text: 'one',
+							val: 1
+						},
+						{
+							text: 'two',
+							val: 2
+						},
+						{
+							text: 'three',
+							val: 3
+						}]
+					},
+					2),
+						$el = $(el);
+					expect($el).toBe("select");
+					expect($el).toHaveAttr("name", "foo");
+					expect($el).toHaveHtml("<option value='1'>one</option><option value='2' selected='selected'>two</option><option value='3'>three</option>");
+					expect($el).toHaveClass("prop-edit-ctrl");
+				});
+				it("should use makeSelectOption function if supplied, and use valueProp", function() {
+					var el = mkr({
+						name: "foo",
+						valueProp: "id",
+						options: [{
+							text: 'one',
+							id: 1
+						},
+						{
+							text: 'two',
+							id: 2
+						},
+						{
+							text: 'three',
+							id: 3
+						}],
+						makeSelectOption: function(opt) {
+							return opt.text + "FFS";
+						}
+					},
+					1),
+						$el = $(el);
+					expect($el).toBe("select");
+					expect($el).toHaveAttr("name", "foo");
+					expect($el).toHaveHtml("<option value='1' selected='selected'>oneFFS</option><option value='2'>twoFFS</option><option value='3'>threeFFS</option>");
+					expect($el).toHaveClass("prop-edit-ctrl");
+				});
 			});
 			describe("the produced instance", function() {
 				var view = new PropertySelectView({
@@ -403,127 +581,130 @@ describe("the Mirage object", function() {
 					expect(view).toBeA(Mirage.Property.BaseView);
 					expect(view).toBeA(Backbone.View);
 				});
-				describe("the value html maker", function() {
-					var mkr = view.valueHtml;
-					it("returns the correct element", function() {
-						var el = mkr({
-							name: "foo",
-							options: [{
-								text: 'one',
-								val: 1
-							},
-							{
-								text: 'two',
-								val: 2
-							},
-							{
-								text: 'three',
-								val: 3
-							}]
-						},
-						3);
-						expect(el).toEqual("three");
-					});
-					it("should use makeValue function if supplied, and use valueProp", function() {
-						var el = mkr({
-							name: "foo",
-							valueProp: "num",
-							options: [{
-								text: 'one',
-								num: 1
-							},
-							{
-								text: 'two',
-								num: 2
-							},
-							{
-								text: 'three',
-								num: 3
-							}],
-							makeValue: function(opt) {
-								return opt.text + "FFS";
-							}
-						},
-						2);
-						expect(el).toEqual("twoFFS");
-					});
-					it("should default to ----- if val is empty", function() {
-						var el = mkr({
-							name: "foo",
-							options: []
-						});
-						expect(el).toEqual("-----");
-					});
-					it("should use 'empty' prop if val is empty", function() {
-						var el = mkr({
-							name: "foo",
-							options: [],
-							empty: "None"
-						});
-						expect(el).toEqual("None");
-					});
-				});
-				describe("the edit html maker", function() {
-					var mkr = view.editHtml;
-					it("is defined", function() {
-						expect(mkr).toBeDefined();
-					});
-					it("returns the correct value", function() {
-						var el = mkr({
-							name: "foo",
-							options: [{
-								text: 'one',
-								val: 1
-							},
-							{
-								text: 'two',
-								val: 2
-							},
-							{
-								text: 'three',
-								val: 3
-							}]
-						},
-						2),
-							$el = $(el);
-						expect($el).toBe("select");
-						expect($el).toHaveAttr("name", "foo");
-						expect($el).toHaveHtml("<option value='1'>one</option><option value='2' selected='selected'>two</option><option value='3'>three</option>");
-						expect($el).toHaveClass("prop-edit-ctrl");
-					});
-					it("should use makeSelectOption function if supplied, and use valueProp", function() {
-						var el = mkr({
-							name: "foo",
-							valueProp: "id",
-							options: [{
-								text: 'one',
-								id: 1
-							},
-							{
-								text: 'two',
-								id: 2
-							},
-							{
-								text: 'three',
-								id: 3
-							}],
-							makeSelectOption: function(opt) {
-								return opt.text + "FFS";
-							}
-						},
-						1),
-							$el = $(el);
-						expect($el).toBe("select");
-						expect($el).toHaveAttr("name", "foo");
-						expect($el).toHaveHtml("<option value='1' selected='selected'>oneFFS</option><option value='2'>twoFFS</option><option value='3'>threeFFS</option>");
-						expect($el).toHaveClass("prop-edit-ctrl");
-					});
-				});
 			});
 		});
 		
 		describe("the property multiselect view",function(){
 			var PropertyMultiSelectView = Mirage.Property.MultiSelectView;
+			describe("the value html maker", function() {
+				var mkr = PropertyMultiSelectView.prototype.valueHtml;
+				it("returns the correct element", function() {
+					var el = mkr({
+						name: "foo",
+						options: [{
+							text: 'one',
+							val: 1
+						},
+						{
+							text: 'two',
+							val: 2
+						},
+						{
+							text: 'three',
+							val: 3
+						}]
+					},
+					[1,3]);
+					expect(el).toEqual('<span key="1">one</span><span key="3">three</span>');
+				});
+				it("should use makeValue function if supplied, and use valueProp", function() {
+					var el = mkr({
+						name: "foo",
+						valueProp: "num",
+						options: [{
+							text: 'one',
+							num: 1
+						},
+						{
+							text: 'two',
+							num: 2
+						},
+						{
+							text: 'three',
+							num: 3
+						}],
+						makeValue: function(opt) {
+							return "<p>"+opt.text + "FFS</p>";
+						}
+					},
+					[2]);
+					expect($(el)[0].outerHTML).toEqual('<p key="2">twoFFS</p>');
+				});
+				it("should default to ----- if val is empty", function() {
+					var el = mkr({
+						name: "foo",
+						options: []
+					},
+					[]);
+					expect(el).toEqual("-----");
+				});
+				it("should use 'empty' prop if val is empty", function() {
+					var el = mkr({
+						name: "foo",
+						options: [],
+						empty: "None"
+					},
+					[]);
+					expect(el).toEqual("None");
+				});
+			});
+			describe("the edit html maker", function() {
+				var mkr = PropertyMultiSelectView.prototype.editHtml;
+				it("is defined", function() {
+					expect(mkr).toBeDefined();
+				});
+				it("returns the correct value", function() {
+					var el = mkr({
+						name: "foo",
+						options: [{
+							text: 'one',
+							val: 1
+						},
+						{
+							text: 'two',
+							val: 2
+						},
+						{
+							text: 'three',
+							val: 3
+						}]
+					},
+					[2,3]),
+						$el = $(el);
+					expect($el).toBe("select");
+					expect($el).toHaveAttr("name", "foo");
+					expect($el).toHaveAttr("multiple","multiple");
+					expect($el).toHaveHtml("<option value='1'>one</option><option value='2' selected='selected'>two</option><option value='3' selected='selected'>three</option>");
+					expect($el).toHaveClass("prop-edit-ctrl");
+				});
+				it("should use makeSelectOption function if supplied, and use valueProp", function() {
+					var el = mkr({
+						name: "foo",
+						valueProp: "id",
+						options: [{
+							text: 'one',
+							id: 1
+						},
+						{
+							text: 'two',
+							id: 2
+						},
+						{
+							text: 'three',
+							id: 3
+						}],
+						makeSelectOption: function(opt) {
+							return opt.text + "FFS";
+						}
+					},
+					[1]),
+						$el = $(el);
+					expect($el).toBe("select");
+					expect($el).toHaveAttr("name", "foo");
+					expect($el).toHaveHtml("<option value='1' selected='selected'>oneFFS</option><option value='2'>twoFFS</option><option value='3'>threeFFS</option>");
+					expect($el).toHaveClass("prop-edit-ctrl");
+				});
+			});
 			describe("the produced instance", function() {
 				var view = new PropertyMultiSelectView({
 					propdef: {
@@ -552,125 +733,6 @@ describe("the Mirage object", function() {
 					expect(view).toBeA(PropertyMultiSelectView);
 					expect(view).toBeA(Mirage.Property.BaseView);
 					expect(view).toBeA(Backbone.View);
-				});
-				describe("the value html maker", function() {
-					var mkr = view.valueHtml;
-					it("returns the correct element", function() {
-						var el = mkr({
-							name: "foo",
-							options: [{
-								text: 'one',
-								val: 1
-							},
-							{
-								text: 'two',
-								val: 2
-							},
-							{
-								text: 'three',
-								val: 3
-							}]
-						},
-						[1,3]);
-						expect(el).toEqual('<span key="1">one</span><span key="3">three</span>');
-					});
-					it("should use makeValue function if supplied, and use valueProp", function() {
-						var el = mkr({
-							name: "foo",
-							valueProp: "num",
-							options: [{
-								text: 'one',
-								num: 1
-							},
-							{
-								text: 'two',
-								num: 2
-							},
-							{
-								text: 'three',
-								num: 3
-							}],
-							makeValue: function(opt) {
-								return "<p>"+opt.text + "FFS</p>";
-							}
-						},
-						[2]);
-						expect($(el)[0].outerHTML).toEqual('<p key="2">twoFFS</p>');
-					});
-					it("should default to ----- if val is empty", function() {
-						var el = mkr({
-							name: "foo",
-							options: []
-						},
-						[]);
-						expect(el).toEqual("-----");
-					});
-					it("should use 'empty' prop if val is empty", function() {
-						var el = mkr({
-							name: "foo",
-							options: [],
-							empty: "None"
-						},
-						[]);
-						expect(el).toEqual("None");
-					});
-				});
-				describe("the edit html maker", function() {
-					var mkr = view.editHtml;
-					it("is defined", function() {
-						expect(mkr).toBeDefined();
-					});
-					it("returns the correct value", function() {
-						var el = mkr({
-							name: "foo",
-							options: [{
-								text: 'one',
-								val: 1
-							},
-							{
-								text: 'two',
-								val: 2
-							},
-							{
-								text: 'three',
-								val: 3
-							}]
-						},
-						[2,3]),
-							$el = $(el);
-						expect($el).toBe("select");
-						expect($el).toHaveAttr("name", "foo");
-						expect($el).toHaveAttr("multiple","multiple");
-						expect($el).toHaveHtml("<option value='1'>one</option><option value='2' selected='selected'>two</option><option value='3' selected='selected'>three</option>");
-						expect($el).toHaveClass("prop-edit-ctrl");
-					});
-					it("should use makeSelectOption function if supplied, and use valueProp", function() {
-						var el = mkr({
-							name: "foo",
-							valueProp: "id",
-							options: [{
-								text: 'one',
-								id: 1
-							},
-							{
-								text: 'two',
-								id: 2
-							},
-							{
-								text: 'three',
-								id: 3
-							}],
-							makeSelectOption: function(opt) {
-								return opt.text + "FFS";
-							}
-						},
-						[1]),
-							$el = $(el);
-						expect($el).toBe("select");
-						expect($el).toHaveAttr("name", "foo");
-						expect($el).toHaveHtml("<option value='1' selected='selected'>oneFFS</option><option value='2'>twoFFS</option><option value='3'>threeFFS</option>");
-						expect($el).toHaveClass("prop-edit-ctrl");
-					});
 				});
 			});
 		});

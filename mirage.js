@@ -6,7 +6,7 @@ this.Mirage = (function(){
 	var elementWrapper = function(o){
 		var $el = $(o.content);
 		if (o.force || $el.length !== 1){
-			var tag = o.wraptag || "span";
+			var tag = o.tag || "span";
 			$el = $("<"+tag+">"+o.content+"</"+tag+">");
 		}
 		if (o.attributes){
@@ -45,6 +45,14 @@ this.Mirage = (function(){
 			this.propdef = o;
 			this.setElement(this.buildElement(opts.kind));
 			this.$el.addClass("prop-"+o.type);
+			if (o.labelPosition){
+				this.$el[o.labelPosition==="before"?"prepend":"append"](this.buildElement("label",opts.kind!=="edit"?{}:{
+					tag: "label",
+					attributes: {
+						"for": "prop-"+o.type+"-edit-"+o.name
+					}
+				}));
+			}
 			if (click){
 				this.$el.on.apply(this.$el,click.selector?["click",click.selector,click.callback]:["click",click.callback]);
 			}
@@ -52,30 +60,31 @@ this.Mirage = (function(){
 		
 		// Called from `initialize` with viewkind (label/value/edit) as argument.
 		// Will call &lt;viewkind&gt;Html to create content, and pass along to elementWrapper
-		buildElement: function(viewkind){
+		buildElement: function(viewkind,instr){
 			var o = this.propdef,
 				val = this.model.attributes[o.name],
-				content = this[viewkind+"Html"](o,val);
+				content = this[viewkind+"Html"](o,val),
+				label;
 			if (viewkind === "value"){
 				this.model.on("change:"+o.name,this.updateValueElement);
 			}
-			return this.elementWrapper(viewkind,o.type,content);
+			return this.elementWrapper(viewkind,o.type,content,instr);
 		},
 		
 		// Used in `buildElement`. Responsible for wrapping content in span (if needed),
 		// and adding relevant css classes.
-		elementWrapper: function(viewkind,proptype,content){
-			return elementWrapper({
+		elementWrapper: function(viewkind,proptype,content,instr){
+			return elementWrapper(_.defaults(instr||{},{
 				force: viewkind === "value",
 				classes: "prop-"+viewkind+" prop-"+proptype+"-"+viewkind,
 				content: content
-			});
+			}));
 		},
 		
 		// The callback used to update a value propview when the model attribute changes.
 		// This default implementation will simply repopulate the element with a new
 		// call to `valueHtml`.
-		updateValueElement: function(){
+		updateValueElement: function(){ // TODO - make this more clever, so u don't remove label!
 			this.$el.html(this.valueHtml(this.propdef,this.model.attributes[this.propdef.name]));
 		},
 		
@@ -89,6 +98,12 @@ this.Mirage = (function(){
 		// the current value of the relevant model attribute, which is supplied as the second 
 		// argument to all html generator functions.
 		valueHtml: function(o,val){
+			return val;
+		},
+		
+		
+		// Generates html for the edit control. Must be overridden in inheriting class.
+		editHtml: function(o,val){
 			return val;
 		},
 		
