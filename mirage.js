@@ -110,7 +110,7 @@ this.Mirage = (function(){
 		// Returns the current value of the edit element control. Used in the Mirage ModelView to 
 		// collect all entered values upon form submission.
 		getInputValue: function(){
-			return this.$("input.prop-edit-ctrl").val();
+			return this.$(".prop-edit-ctrl").val();
 		},
 		
 		// We don't need to do anything here, as the `initialize` function took care of building the 

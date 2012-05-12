@@ -5,13 +5,7 @@ describe("the Mirage object", function() {
 	});
 	
 	describe("the Property functionality", function() {
-		var ElMaker = function(constr) {
-			return function(o) {
-				return constr.call({
-					propdef: o
-				});
-			};
-		};
+		
 		describe("the PropertyBaseView", function() {
 			var PropBaseView = Mirage.Property.BaseView;
 			it("is defined", function() {
@@ -39,9 +33,13 @@ describe("the Mirage object", function() {
 					propdef: propdef,
 					kind: "valueoreditorlabel"
 				});
-				expect(instance.propdef).toEqual(propdef);
-				expect(instance.mynewelement).toEqual("valueoreditorlabelFFS");
-				expect(addedclass).toEqual("prop-sometype");
+				it("should set propdef to instance",function(){
+					expect(instance.propdef).toEqual(propdef);
+				});
+				it("should use buildElement to set element, and add correct class",function(){
+					expect(instance.mynewelement).toEqual("valueoreditorlabelFFS");
+					expect(addedclass).toEqual("prop-sometype");
+				});
 			});
 			describe("the updateValueElement function", function() {
 				var htmlspy = jasmine.createSpy(),
@@ -126,6 +124,33 @@ describe("the Mirage object", function() {
 					expect(label).toEqual("woo");
 				});
 			});
+			describe("the getInputValue function", function() {
+				var flag1, flag2;
+				PropBaseView.prototype.getInputValue.call({
+					$: function(arg){
+						flag1=arg;
+						return {
+							val: function(){
+								flag2=true;
+							}
+						};
+					}
+				});
+				it("selects elements with correct class", function() {
+					expect(flag1).toEqual(".prop-edit-ctrl");
+				});
+				it("calls val() on the resulting jQuery set",function(){
+					expect(flag2).toBeTrue;
+				});
+			});
+			describe("the render function", function() {
+				var obj = {foo:"bar"};
+				it("should return the instance", function() {
+					expect(PropBaseView.prototype.render.call(obj)).toEqual(obj);
+				});
+			});
+			
+			
 			describe("the created instance", function() {
 				var view = new PropBaseView({
 					kind: "value",
@@ -227,20 +252,6 @@ describe("the Mirage object", function() {
 						"value");
 						expect(el).toEqual("MODE-value,TYPE-txt,CONTENT-foobar");
 						expect(triggerspy).toHaveBeenCalledWith("change:someprop", updateval);
-					});
-				});
-				describe("the getInputValue function", function() {
-					view.$el.html("<input class='prop-edit' val='bar'></input><input class='prop-edit-ctrl' value='foo'></input>");
-					it("is defined", function() {
-						expect(view.getInputValue).toBeAFunction();
-					});
-					it("returns the value from the textbox with correct class", function() {
-						expect(view.getInputValue()).toEqual("foo");
-					});
-				});
-				describe("the render function", function() {
-					it("should return the instance", function() {
-						expect(view.render()).toEqual(view);
 					});
 				});
 			});

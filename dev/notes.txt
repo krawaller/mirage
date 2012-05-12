@@ -3,3 +3,5 @@ Build steps
 
  * generate index from README.me using: cat README.md | mdown > index.html
  * generate annotated sourcecode using: docco mirage.js
+
+md generation: https://github.com/millermedeiros/gh-markdown-cli
