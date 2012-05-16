@@ -234,16 +234,23 @@ this.Mirage = (function(){
 		this.constructor.__super__.initialize.call(this,opts);
 	};
 	
+	var relationPreInit = function(opts){
+		this.valueProp = opts.valueProp || "id";
+		this.options = opts.collection.models;
+	}
+	
 	// The HasOne view, inheriting from SelectView
 	var PropertyHasOneView = PropertySelectView.extend({
 		type: "hasone",
-		initialize: relationInitialize
+		initialize: relationInitialize,
+		preInit: relationPreInit
 	});
 	
 	// The HasMany view, inheriting from MultiSelectView
 	var PropertyHasManyView = PropertyMultiSelectView.extend({
 		type: "hasmany",
-		initialize: relationInitialize
+		initialize: relationInitialize,
+		preInit: relationPreInit
 	});
 
 

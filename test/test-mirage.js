@@ -793,117 +793,59 @@ describe("the Mirage object", function() {
 			});
 			
 		});
-/*		
+
 		describe("the hasone property view",function(){
 			var PropertyHasOneView = Mirage.Property.HasOneView;
 			it("is defined",function(){
 				expect(PropertyHasOneView).toBeDefined();
 			});
-			describe("the instance",function(){
-				var clickedmodelid, collection, view, modelClick, makeValue;
-				collection = new Backbone.Collection([{id:1,name:"one"},{id:2,name:"two"}]);
-				modelClick = function(model){
-					clickedmodelid = model.id;
-				};
-				makeValue = function(model){
-					return model.attributes.name;
-				};
-				view = new PropertyHasOneView({
-					kind: "value",
-					model: {
-						attributes: {
-							woo: 2
-						},
-						on: function(){}
-					},
-					propdef: {
-						name: "woo",
-						collection: collection,
-						makeValue: makeValue,
-						makeSelectOption: "foobar",
-						modelClick: modelClick
-					}
+			it("has correct type",function(){
+				expect(PropertyHasOneView.prototype.type).toEqual("hasone");
+			});
+			it("should inherit from PropSelectView",function(){
+				expect(PropertyHasOneView.__super__).toBe(Mirage.Property.SelectView.prototype);
+			});
+			describe("the preInit function",function(){
+				var pi = PropertyHasOneView.prototype.preInit;
+				it("should store correct values on instance",function(){
+					var context = {}, arg = {
+						valueProp: "bar",
+						collection: {
+							models: "foo"
+						}
+					};
+					pi.call(context,arg);
+					expect(context.options).toEqual(arg.collection.models);
+					expect(context.valueProp).toEqual(arg.valueProp);
 				});
-				it("should handle model clicks",function(){
-					view.$el.find(".prop-model").click();
-					expect(clickedmodelid).toEqual(2);
-				});
-				it("should set proper propdef",function(){
-					var p = view.propdef;
-					expect(p.options).toEqual(collection.models);
-					expect(p.collection).toEqual(collection);
-					expect(p.type).toEqual("hasone");
-					expect(p.clickEvent).toBeDefined();
-					expect(p.clickEvent.selector).toEqual(".prop-model");
-					expect(p.valueProp).toEqual("id");
-					expect(p.makeValue).toBeA(Function);
-					expect(p.makeValue).not.toEqual(makeValue);
-					expect(p.makeSelectOption).toBe("foobar");
-				});
-				it("should draw correct value html",function(){
-					expect(view.$el).toBe("span");
-					expect(view.$el).toHaveClass("prop-hasone");
-					expect(view.$el).toHaveHtml("<span class='prop-model' key='2'>two</span>");
+				it("should use 'id' as default for valueprop",function(){
+					var context = {}, arg = {
+						collection: {
+							models: "foo"
+						}
+					};
+					pi.call(context,arg);
+					expect(context.valueProp).toEqual("id");
 				});
 			});
 		});
-		
+
 		describe("the hasmany property view",function(){
 			var PropertyHasManyView = Mirage.Property.HasManyView;
 			it("is defined",function(){
 				expect(PropertyHasManyView).toBeDefined();
 			});
-			describe("the instance",function(){
-				var clickedmodelid, collection, view, modelClick, makeValue;
-				collection = new Backbone.Collection([{id:1,name:"one"},{id:2,name:"two"},{id:3,name:"three"}]);
-				modelClick = function(model){
-					clickedmodelid = model.id;
-				};
-				makeValue = function(model){
-					return model.attributes.name+"FFS";
-				};
-				view = new PropertyHasManyView({
-					kind: "value",
-					model: {
-						attributes: {
-							woo: [1,3]
-						},
-						on: function(){}
-					},
-					propdef: {
-						name: "woo",
-						collection: collection,
-						makeValue: makeValue,
-						makeSelectOption: "foobar",
-						modelClick: modelClick
-					}
-				});
-				it("should handle model clicks",function(){
-					view.$el.find(".prop-model").eq(0).click();
-					expect(clickedmodelid).toEqual(1);
-					view.$el.find(".prop-model").eq(1).click();
-					expect(clickedmodelid).toEqual(3);
-				});
-				it("should set proper propdef",function(){
-					var p = view.propdef;
-					expect(p.options).toEqual(collection.models);
-					expect(p.collection).toEqual(collection);
-					expect(p.type).toEqual("hasmany");
-					expect(p.clickEvent).toBeDefined();
-					expect(p.clickEvent.selector).toEqual(".prop-model");
-					expect(p.valueProp).toEqual("id");
-					expect(p.makeValue).toBeA(Function);
-					expect(p.makeValue).not.toEqual(makeValue);
-					expect(p.makeSelectOption).toBe("foobar");
-				});
-				it("should draw correct value html",function(){
-					expect(view.$el).toBe("span");
-					expect(view.$el).toHaveClass("prop-hasmany");
-					expect(view.$el).toHaveHtml("<span class='prop-model' key='1'>oneFFS</span><span class='prop-model' key='3'>threeFFS</span>");
-				});
+			it("has same preInit as hasone",function(){
+				expect(PropertyHasManyView.prototype.preInit).toBe(Mirage.Property.HasOneView.prototype.preInit);
+			});
+			it("has correct type",function(){
+				expect(PropertyHasManyView.prototype.type).toEqual("hasmany");
+			});
+			it("should inherit from PropMultiSelectView",function(){
+				expect(PropertyHasManyView.__super__).toBe(Mirage.Property.MultiSelectView.prototype);
 			});
 		});
-*/
+
 
 	});
 });
