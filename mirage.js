@@ -43,8 +43,10 @@ this.Mirage = (function(){
 		initialize: function(opts){
 			var o = opts.propdef, click = o.clickEvent;
 			this.propdef = o;
-			this.setElement(this.buildElement(opts.kind));
-			this.$el.addClass("prop-"+o.type);
+			this.value = opts.value;
+			this.setElement(this.buildElement(opts));
+			//his.$el.addClass("prop-"+o.type);
+			/*
 			if (o.labelPosition){
 				this.$el[o.labelPosition==="before"?"prepend":"append"](this.buildElement("label",opts.kind!=="edit"?{}:{
 					tag: "label",
@@ -53,24 +55,58 @@ this.Mirage = (function(){
 					}
 				}));
 			}
+			*/
+			/*
 			if (click){
 				this.$el.on.apply(this.$el,click.selector?["click",click.selector,click.callback]:["click",click.callback]);
 			}
+			*/
 		},
 		
-		// Called from `initialize` with viewkind (label/value/edit) as argument.
-		// Will call &lt;viewkind&gt;Html to create content, and pass along to elementWrapper
-		buildElement: function(viewkind,instr){
-			var o = this.propdef,
-				val = this.model.attributes[o.name],
-				content = this[viewkind+"Html"](o,val),
-				label;
-			if (viewkind === "value"){
-				this.model.on("change:"+o.name,this.updateValueElement);
+		// Used in `buildElement`. Responsible for wrapping content in tag (if needed),
+		// and adding relevant attributes and css classes.
+		elementWrapper: function(o){
+			o = _.defaults(o||{},{
+				tag: "span",
+				classes: "prop-"+o.kind+" prop-"+o.type+"-"+o.kind
+			});
+			var $el = $(o.content);
+			if (o.force || $el.length !== 1){
+				var tag = o.tag || "span";
+				$el = $("<"+tag+">"+o.content+"</"+tag+">");
 			}
-			return this.elementWrapper(viewkind,o.type,content,instr);
+			if (o.attributes){
+				$el.attr(o.attributes);
+			}
+			if (o.classes){
+				$el.addClass(o.classes);
+			}
+			return $el;
 		},
 		
+		
+		// Called from `initialize`, passing the whole parameter object.
+		// Will call &lt;viewkind&gt;Html to create content, and pass along to elementWrapper
+		buildElement: function(o){
+			var content = this[(o.editing?"edit":"value")+"Html"](o.propdef,o.value);
+			if (o.labelPosition){
+				var lbl = this.labelHtml(o.propdef,o.value);
+				if (o.editing){
+					lbl = "<label for='"+o.propdef.name+"'>"+lbl+"</label>";
+				}
+				if (o.labelPosition === "before"){
+					content = lbl + content;
+				} else if (o.labelPosition === "after"){
+					content = content + lbl;
+				}
+			}
+			return this.elementWrapper({
+				content: content,
+				force: !o.editing
+			});
+		},
+		
+/*		
 		// Used in `buildElement`. Responsible for wrapping content in span (if needed),
 		// and adding relevant css classes.
 		elementWrapper: function(viewkind,proptype,content,instr){
@@ -80,7 +116,7 @@ this.Mirage = (function(){
 				content: content
 			}));
 		},
-		
+*/		
 		// The callback used to update a value propview when the model attribute changes.
 		// This default implementation will simply repopulate the element with a new
 		// call to `valueHtml`.
@@ -228,7 +264,6 @@ this.Mirage = (function(){
 			valueProp: "id" || p.valueProp,
 			makeValue: function(model){
 				var str = p.makeValue ? p.makeValue(model) : model.attributes.text;
-				return "<span class='prop-model' key='"+(model.id || model.cid)+"'>"+str+"</span>";
 			}
 		},p);
 		if (p.modelClick){
@@ -255,6 +290,8 @@ this.Mirage = (function(){
 		initialize: relationInitialize
 	});
 
+
+/* OLD CODE BELOW HERE */
 
 	var PROPVIEWS = {
 		text: PropertyTextView

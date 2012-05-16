@@ -12,35 +12,254 @@ describe("the Mirage object", function() {
 				expect(Mirage).toBeAFunction();
 			});
 			describe("the initialize function", function() {
-				var addedclass, testclass = PropBaseView.extend({
+				var arg, context;
+				context = {
 					setElement: function(el) {
 						this.mynewelement = el;
 					},
-					buildElement: function(viewkind) {
-						return viewkind + "FFS";
-					},
-					$el: {
-						addClass: function(c) {
-							addedclass = c;
-						}
+					buildElement: function(o) {
+						return o.editing + o.propdef + "FFS";
 					}
-				});
-				var propdef = {
-					name: "myprop",
-					type: "sometype"
 				};
-				var instance = new testclass({
-					propdef: propdef,
-					kind: "valueoreditorlabel"
+				arg = {
+					editing: false,
+					propdef: "FOO",
+					value: "wee"
+				};
+				PropBaseView.prototype.initialize.call(context,arg);
+				it("should set propdef to context",function(){
+					expect(context.propdef).toEqual(arg.propdef);
 				});
-				it("should set propdef to instance",function(){
-					expect(instance.propdef).toEqual(propdef);
+				it("should set value to context",function(){
+					expect(context.value).toEqual(arg.value);
 				});
-				it("should use buildElement to set element, and add correct class",function(){
-					expect(instance.mynewelement).toEqual("valueoreditorlabelFFS");
-					expect(addedclass).toEqual("prop-sometype");
+				it("should call setElement with result from calling buildElement with args",function(){
+					expect(context.mynewelement).toEqual("falseFOOFFS");
 				});
 			});
+			describe("the elementWrapper function",function(){
+				var wrapper = PropBaseView.prototype.elementWrapper;
+				it("should return jQuery object, wrapped and processed with defaults",function(){
+					var $el = wrapper({content: "test",type:"text",kind:"value"});
+					expect($el).toBeA(jQuery);
+					expect($el).toBe("span");
+					expect($el.length).toEqual(1);
+					expect($el).toHaveHtml("test");
+					expect($el).toHaveClass("prop-value");
+					expect($el).toHaveClass("prop-text-value");
+				});
+				it("should wrap with given tag",function(){
+					var $el = wrapper({content: "test",type:"text",kind:"value",tag:"div"});
+					expect($el).toBe("div");
+					expect($el.length).toEqual(1);
+					expect($el).toHaveHtml("test");
+				});
+				it("should not wrap if content is exactly 1 tag",function(){
+					var $el = wrapper({content: "<p>test</p>",type:"text",kind:"value"});
+					expect($el).toBe("p");
+					expect($el.length).toEqual(1);
+					expect($el).toHaveHtml("test");
+				});
+				it("should wrap 1-tag content if force is true",function(){
+					var $el = wrapper({content: "<p>test</p>",type:"text",kind:"value",force:"true"});
+					expect($el).toBe("span");
+					expect($el).toHaveHtml("<p>test</p>");
+				});
+				it("should set given attributes",function(){
+					var $el = wrapper({content: "test",type:"text",kind:"value",attributes:{foo:"bar"}});
+					expect($el).toHaveAttr("foo","bar");
+				});
+				it("should set given classes",function(){
+					var $el = wrapper({content: "test",type:"text",kind:"value",classes:"foo bar"});
+					expect($el).toHaveClass("foo");
+					expect($el).toHaveClass("bar");
+					expect($el).not.toHaveClass("prop-value");
+				});
+			});
+			
+			describe("the buildElement function", function(){
+				var build = PropBaseView.prototype.buildElement;
+				describe("when not editing",function(){
+					var context, valspy, wrapspy, result, arg;
+					valspy = jasmine.createSpy("valueHtml");
+					wrapspy = jasmine.createSpy("elementWrapper");
+					context = {
+						valueHtml: function(propdef,val){
+							valspy(propdef,val);
+							return "bin";
+						},
+						elementWrapper: function(o){
+							wrapspy(o);
+							return "baz";
+						},
+						editHtml: jasmine.createSpy(),
+						labelHtml: jasmine.createSpy()
+					};
+					arg = {
+						value: "bar",
+						propdef: "foo"
+					};
+					result = build.call(context,arg);
+					it("should call valueHtml with propdef and value",function(){
+						expect(valspy).toHaveBeenCalledWith(arg.propdef, arg.value);
+					});
+					it("should elementwrapper with correct args ",function(){
+						expect(wrapspy).toHaveBeenCalledWith({
+							content: "bin",
+							force: true
+						});
+					});
+					it("should return the result from the elwrap call",function(){
+						expect(result).toEqual("baz");
+					});
+					it("should not call unneeded html funcs",function(){
+						expect(context.editHtml).not.toHaveBeenCalled();
+						expect(context.labelHtml).not.toHaveBeenCalled();
+					});
+				});
+				describe("when editing",function(){
+					var context, html, wrapspy, result, arg;
+					htmlspy = jasmine.createSpy("editHtml");
+					wrapspy = jasmine.createSpy("elementWrapper");
+					context = {
+						editHtml: function(propdef,val){
+							htmlspy(propdef,val);
+							return "boo";
+						},
+						elementWrapper: function(o){
+							wrapspy(o);
+							return "baz";
+						},
+						valueHtml: jasmine.createSpy()
+					};
+					arg = {
+						value: "bar",
+						propdef: "foo",
+						editing: true
+					};
+					result = build.call(context,arg);
+					it("should call editHtml with propdef and value",function(){
+						expect(htmlspy).toHaveBeenCalledWith(arg.propdef, arg.value);
+					});
+					it("should elementwrapper with correct args ",function(){
+						expect(wrapspy).toHaveBeenCalledWith({
+							content: "boo",
+							force: false
+						});
+					});
+					it("should not call unneeded html func",function(){
+						expect(context.valueHtml).not.toHaveBeenCalled();
+					});
+				});
+				describe("when labelposition is before",function(){
+					var context, valspy, wrapspy, labelspy, result, arg;
+					valspy = jasmine.createSpy("valueHtml");
+					labelspy = jasmine.createSpy("labelHtml");
+					wrapspy = jasmine.createSpy("elementWrapper");
+					context = {
+						valueHtml: function(propdef,val){
+							valspy(propdef,val);
+							return "bin";
+						},
+						labelHtml: function(propdef,val){
+							labelspy(propdef,val);
+							return "label";
+						},
+						elementWrapper: function(o){
+							wrapspy(o);
+							return "baz";
+						}
+					};
+					arg = {
+						value: "bar",
+						propdef: "foo",
+						labelPosition: "before"
+					};
+					result = build.call(context,arg);
+					it("should call valueHtml as usual with propdef and value",function(){
+						expect(valspy).toHaveBeenCalledWith(arg.propdef, arg.value);
+					});
+					it("should call labelHtml too with propdef and value",function(){
+						expect(labelspy).toHaveBeenCalledWith(arg.propdef, arg.value);
+					});
+					it("should call elementwrapper with content having label first",function(){
+						expect(wrapspy).toHaveBeenCalledWith({
+							content: "labelbin",
+							force: true
+						});
+					});
+				});
+				describe("when labelposition is after",function(){
+					var context, valspy, wrapspy, labelspy, result, arg;
+					valspy = jasmine.createSpy("valueHtml");
+					labelspy = jasmine.createSpy("labelHtml");
+					wrapspy = jasmine.createSpy("elementWrapper");
+					context = {
+						valueHtml: function(propdef,val){
+							valspy(propdef,val);
+							return "bin";
+						},
+						labelHtml: function(propdef,val){
+							labelspy(propdef,val);
+							return "label";
+						},
+						elementWrapper: function(o){
+							wrapspy(o);
+							return "baz";
+						}
+					};
+					arg = {
+						value: "bar",
+						propdef: "foo",
+						labelPosition: "after"
+					};
+					result = build.call(context,arg);
+					it("should call valueHtml as usual with propdef and value",function(){
+						expect(valspy).toHaveBeenCalledWith(arg.propdef, arg.value);
+					});
+					it("should call labelHtml too with propdef and value",function(){
+						expect(labelspy).toHaveBeenCalledWith(arg.propdef, arg.value);
+					});
+					it("should call elementwrapper with content having label second",function(){
+						expect(wrapspy).toHaveBeenCalledWith({
+							content: "binlabel",
+							force: true
+						});
+					});
+				});
+				describe("when editing and we have label",function(){
+					var context, valspy, wrapspy, labelspy, result, arg;
+					valspy = jasmine.createSpy("valueHtml");
+					labelspy = jasmine.createSpy("labelHtml");
+					wrapspy = jasmine.createSpy("elementWrapper");
+					context = {
+						editHtml: function(propdef,val){
+							return "bin";
+						},
+						labelHtml: function(propdef,val){
+							return "label";
+						},
+						elementWrapper: function(o){
+							wrapspy(o);
+							return $("<p>"+o.content+"</p>");
+						}
+					};
+					arg = {
+						value: "bar",
+						editing: true,
+						propdef: {
+							name: "NAME"
+						},
+						labelPosition: "before"
+					};
+					result = build.call(context,arg);
+					it("should use the correct html",function(){
+						console.log(result);
+						expect(result).toHaveHtml("<label for='NAME'>label</label>bin");
+					});
+				});
+			});
+			
 			describe("the updateValueElement function", function() {
 				var htmlspy = jasmine.createSpy(),
 					context = {
@@ -64,6 +283,7 @@ describe("the Mirage object", function() {
 					expect(htmlspy).toHaveBeenCalledWith("fooBAR");
 				});
 			});
+			/*
 			describe("the clickhandler",function(){
 				var p = 0, callback = function(){
 						p++;
@@ -92,6 +312,7 @@ describe("the Mirage object", function() {
 					expect(p).toEqual(1);
 				});
 			});
+			*/
 			describe("the label html maker", function() {
 				var mkr = PropBaseView.prototype.labelHtml;
 				it("is defined", function() {
@@ -150,7 +371,7 @@ describe("the Mirage object", function() {
 				});
 			});
 			
-			
+			/*
 			describe("the created instance", function() {
 				var view = new PropBaseView({
 					kind: "value",
@@ -313,8 +534,10 @@ describe("the Mirage object", function() {
 					expect(view.$el).toHaveHtml("BAAAR<label for='prop-moo-edit-fooo' class='prop-label prop-moo-label'>WEEE</label>");
 				});
 			});
+			*/
 		});
 
+/*
 		describe("the PropertyTextView", function() {
 			var PropertyTextView = Mirage.Property.TextView;
 			it("is defined", function() {
@@ -857,6 +1080,7 @@ describe("the Mirage object", function() {
 				});
 			});
 		});
-		
+*/
+
 	});
 });
