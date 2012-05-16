@@ -14,6 +14,7 @@ describe("the Mirage object", function() {
 			describe("the initialize function", function() {
 				var arg, context;
 				context = {
+					preInit: jasmine.createSpy(),
 					setElement: function(el) {
 						this.mynewelement = el;
 					},
@@ -35,6 +36,9 @@ describe("the Mirage object", function() {
 				});
 				it("should call setElement with result from calling buildElement with args",function(){
 					expect(context.mynewelement).toEqual("falseFOOFFS");
+				});
+				it("should call preInit if exist in context, passing whole option obj",function(){
+					expect(context.preInit).toHaveBeenCalledWith(arg);
 				});
 			});
 			describe("the elementWrapper function",function(){
@@ -254,7 +258,6 @@ describe("the Mirage object", function() {
 					};
 					result = build.call(context,arg);
 					it("should use the correct html",function(){
-						console.log(result);
 						expect(result).toHaveHtml("<label for='NAME'>label</label>bin");
 					});
 				});
@@ -342,7 +345,6 @@ describe("the Mirage object", function() {
 			});
 
 		});
-
 
 		describe("the PropertyTextView", function() {
 			var PropertyTextView = Mirage.Property.TextView;

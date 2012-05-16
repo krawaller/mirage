@@ -22,16 +22,12 @@ this.Mirage = (function(){
 		// the correct element depending on the kind. If a `clickEvent` was supplied, we bind that
 		// to the element.
 		initialize: function(opts){
+			this.preInit && this.preInit(opts);
 			var o = opts.propdef, click = o.clickEvent;
 			this.propdef = o;
 			this.value = opts.value;
 			this.setElement(this.buildElement(opts));
 			//his.$el.addClass("prop-"+o.type);
-			/*
-			if (click){
-				this.$el.on.apply(this.$el,click.selector?["click",click.selector,click.callback]:["click",click.callback]);
-			}
-			*/
 		},
 		
 		// Used in `buildElement`. Responsible for wrapping content in tag (if needed),
