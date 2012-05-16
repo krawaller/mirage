@@ -1,24 +1,5 @@
 this.Mirage = (function(){
 
-	// ### Utils
-
-	// Utility function to wrap htmlstring if not exactly 1 tag. Also adds attr and classes.
-	var elementWrapper = function(o){
-		var $el = $(o.content);
-		if (o.force || $el.length !== 1){
-			var tag = o.tag || "span";
-			$el = $("<"+tag+">"+o.content+"</"+tag+">");
-		}
-		if (o.attributes){
-			$el.attr(o.attributes);
-		}
-		if (o.classes){
-			$el.addClass(o.classes);
-		}
-		return $el;
-	};
-	
-
 	// ### Property views
 	// These views are used to display a single model property. There are 3 different flavours of display:
 	//
@@ -46,16 +27,6 @@ this.Mirage = (function(){
 			this.value = opts.value;
 			this.setElement(this.buildElement(opts));
 			//his.$el.addClass("prop-"+o.type);
-			/*
-			if (o.labelPosition){
-				this.$el[o.labelPosition==="before"?"prepend":"append"](this.buildElement("label",opts.kind!=="edit"?{}:{
-					tag: "label",
-					attributes: {
-						"for": "prop-"+o.type+"-edit-"+o.name
-					}
-				}));
-			}
-			*/
 			/*
 			if (click){
 				this.$el.on.apply(this.$el,click.selector?["click",click.selector,click.callback]:["click",click.callback]);
@@ -106,17 +77,6 @@ this.Mirage = (function(){
 			});
 		},
 		
-/*		
-		// Used in `buildElement`. Responsible for wrapping content in span (if needed),
-		// and adding relevant css classes.
-		elementWrapper: function(viewkind,proptype,content,instr){
-			return elementWrapper(_.defaults(instr||{},{
-				force: viewkind === "value",
-				classes: "prop-"+viewkind+" prop-"+proptype+"-"+viewkind,
-				content: content
-			}));
-		},
-*/		
 		// The callback used to update a value propview when the model attribute changes.
 		// This default implementation will simply repopulate the element with a new
 		// call to `valueHtml`.
@@ -233,14 +193,14 @@ this.Mirage = (function(){
 			if (!val || !val.length){
 				return o.empty || "-----";
 			}
-			var sel = [], ret = "", opts = o.options, valprop = o.valueProp || "val";
+			var sel = [], ret = "", opts = o.options, valprop = o.valueProp || "val", me = this;
 			for(var i=0,l=opts.length;i<l;i++){
 				if (_.indexOf(val,opts[i][valprop]) !== -1){
 					sel.push(opts[i]);
 				}
 			}
 			_.each(sel,function(opt){
-				ret += elementWrapper({
+				ret += me.elementWrapper({
 					content: o.makeValue ? o.makeValue(opt) : opt.text,
 					attributes: {
 						key: opt[valprop]

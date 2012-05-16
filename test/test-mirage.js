@@ -283,36 +283,6 @@ describe("the Mirage object", function() {
 					expect(htmlspy).toHaveBeenCalledWith("fooBAR");
 				});
 			});
-			/*
-			describe("the clickhandler",function(){
-				var p = 0, callback = function(){
-						p++;
-					},v = new PropBaseView({
-					kind: "value",
-					model: {
-						attributes: {
-							foo: "BAR!"
-						},
-						on: function() {}
-					},
-					propdef: {
-						name: "foo",
-						type: "baz",
-						clickEvent: {
-							selector: "p",
-							callback: callback
-						}
-					}
-				});
-				v.$el.html("<p>woo</p>");
-				it("should handle clicks!",function(){
-					v.$el.click();
-					expect(p).toEqual(0);
-					v.$el.find("p").click();
-					expect(p).toEqual(1);
-				});
-			});
-			*/
 			describe("the label html maker", function() {
 				var mkr = PropBaseView.prototype.labelHtml;
 				it("is defined", function() {
@@ -370,174 +340,10 @@ describe("the Mirage object", function() {
 					expect(PropBaseView.prototype.render.call(obj)).toEqual(obj);
 				});
 			});
-			
-			/*
-			describe("the created instance", function() {
-				var view = new PropBaseView({
-					kind: "value",
-					model: {
-						attributes: {
-							foo: "BAR"
-						},
-						on: function() {}
-					},
-					propdef: {
-						name: "foo",
-						type: "baz"
-					}
-				});
-				it("is a PropBaseView-produced backbone view instance", function() {
-					expect(view).toBeA(PropBaseView);
-					expect(view).toBeA(Backbone.View);
-				});
-				it("has a span element", function() {
-					expect(view.$el).toBe("span");
-				});
-				it("has type-related class on the element", function() {
-					expect(view.$el).toHaveClass("prop-baz");
-				});
-				describe("the part wrapper", function() {
-					var wrp = view.elementWrapper;
-					it("returns a part with correct classes", function() {
-						var label = wrp("labelvalueedit", "sometype", "FOOBAR");
-						expect(label).toBeA($);
-						expect(label).toBe("span");
-						expect(label).toHaveText("FOOBAR");
-						expect(label).toHaveClass("prop-labelvalueedit");
-						expect(label).toHaveClass("prop-sometype-labelvalueedit");
-					});
-					it("doesn't wrap with span if content is 1 element", function() {
-						var label = wrp("labelvalueedit", "sometype", "<div>FOO</div>");
-						expect(label).toBeA($);
-						expect(label).toBe("div");
-						expect(label).toHaveText("FOO");
-						expect(label).toHaveClass("prop-labelvalueedit");
-						expect(label).toHaveClass("prop-sometype-labelvalueedit");
-					});
-					it("wraps if partype is value, even if content is 1 element", function() {
-						var label = wrp("value", "sometype", "<div>FOO</div>");
-						expect(label).toBeA($);
-						expect(label).toBe("span");
-						expect(label).toHaveText("FOO");
-					});
-				});
-				describe("the buildElement function", function() {
-					it("builds non-value part correctly", function() {
-						var triggerspy = jasmine.createSpy('myStub');
-						var el = view.buildElement.call({
-							propdef: {
-								type: "txt",
-								name: "someprop",
-								somesetting: "bar"
-							},
-							model: {
-								attributes: {
-									someprop: "foo"
-								},
-								on: triggerspy
-							},
-							blahHtml: function(propdef, val) {
-								return val + propdef.somesetting;
-							},
-							elementWrapper: function(partkind, proptype, content) {
-								return "MODE-" + partkind + ",TYPE-" + proptype + ",CONTENT-" + content;
-							}
-						},
-						"blah");
-						expect(el).toEqual("MODE-blah,TYPE-txt,CONTENT-foobar");
-						expect(triggerspy).not.toHaveBeenCalled();
-					});
-					it("builds value part correctly, adding event listener", function() {
-						var triggerspy = jasmine.createSpy('myStub'),
-							updateval = function() {};
-						var el = view.buildElement.call({
-							propdef: {
-								type: "txt",
-								name: "someprop",
-								somesetting: "bar"
-							},
-							model: {
-								attributes: {
-									someprop: "foo"
-								},
-								on: triggerspy
-							},
-							updateValueElement: updateval,
-							valueHtml: function(propdef, val) {
-								return val + propdef.somesetting;
-							},
-							elementWrapper: function(partkind, proptype, content) {
-								return "MODE-" + partkind + ",TYPE-" + proptype + ",CONTENT-" + content;
-							}
-						},
-						"value");
-						expect(el).toEqual("MODE-value,TYPE-txt,CONTENT-foobar");
-						expect(triggerspy).toHaveBeenCalledWith("change:someprop", updateval);
-					});
-				});
-			});
-			describe("the labelPosition option set to before",function(){
-				var view = new PropBaseView({
-					kind: "value",
-					model: {
-						attributes: {
-							foo: "BAR"
-						},
-						on: function() {}
-					},
-					propdef: {
-						name: "foo",
-						type: "baz",
-						labelPosition: "before"
-					}
-				});
-				it("adds a label before the element",function(){
-					expect(view.$el).toHaveHtml("<span class='prop-label prop-baz-label'>foo</span>BAR");
-				});
-			});
-			describe("the labelPosition option set to after",function(){
-				var view = new PropBaseView({
-					kind: "value",
-					model: {
-						attributes: {
-							foo: "BAR"
-						},
-						on: function() {}
-					},
-					propdef: {
-						name: "foo",
-						type: "baz",
-						labelPosition: "after"
-					}
-				});
-				it("adds a label after the element",function(){
-					expect(view.$el).toHaveHtml("BAR<span class='prop-label prop-baz-label'>foo</span>");
-				});
-			});
-			describe("the labelPosition option for edit element",function(){
-				var view = new PropBaseView({
-					kind: "edit",
-					model: {
-						attributes: {
-							fooo: "BAAAR"
-						},
-						on: function() {}
-					},
-					propdef: {
-						name: "fooo",
-						type: "moo",
-						label: "WEEE",
-						labelPosition: "after"
-					}
-				});
-				it("adds a label after the element",function(){
-					expect(view.$el).toHaveHtml("BAAAR<label for='prop-moo-edit-fooo' class='prop-label prop-moo-label'>WEEE</label>");
-				});
-			});
-			*/
+
 		});
 
-/*
+
 		describe("the PropertyTextView", function() {
 			var PropertyTextView = Mirage.Property.TextView;
 			it("is defined", function() {
@@ -820,10 +626,17 @@ describe("the Mirage object", function() {
 		
 		describe("the property multiselect view",function(){
 			var PropertyMultiSelectView = Mirage.Property.MultiSelectView;
+			
 			describe("the value html maker", function() {
 				var mkr = PropertyMultiSelectView.prototype.valueHtml;
 				it("returns the correct element", function() {
-					var el = mkr({
+					var wrapspy = jasmine.createSpy("elementWrapper");
+					var context = {
+						elementWrapper: function(o){
+							return $("<span key='"+o.attributes.key+"'>"+o.content+"</span>");
+						}
+					};
+					var el = mkr.call(context,{
 						name: "foo",
 						options: [{
 							text: 'one',
@@ -842,7 +655,13 @@ describe("the Mirage object", function() {
 					expect(el).toEqual('<span key="1">one</span><span key="3">three</span>');
 				});
 				it("should use makeValue function if supplied, and use valueProp", function() {
-					var el = mkr({
+					var wrapspy = jasmine.createSpy("elementWrapper");
+					var context = {
+						elementWrapper: function(o){
+							return $(o.content).attr("key",o.attributes.key);
+						}
+					};
+					var el = mkr.call(context,{
 						name: "foo",
 						valueProp: "num",
 						options: [{
@@ -939,6 +758,7 @@ describe("the Mirage object", function() {
 					expect($el).toHaveClass("prop-edit-ctrl");
 				});
 			});
+
 			describe("the produced instance", function() {
 				var view = new PropertyMultiSelectView({
 					propdef: {
@@ -969,8 +789,9 @@ describe("the Mirage object", function() {
 					expect(view).toBeA(Backbone.View);
 				});
 			});
+			
 		});
-		
+/*		
 		describe("the hasone property view",function(){
 			var PropertyHasOneView = Mirage.Property.HasOneView;
 			it("is defined",function(){
