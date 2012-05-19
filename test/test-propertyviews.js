@@ -44,13 +44,14 @@ describe("the Mirage object", function() {
 			describe("the elementWrapper function",function(){
 				var wrapper = PropBaseView.prototype.elementWrapper;
 				it("should return jQuery object, wrapped and processed with defaults",function(){
-					var $el = wrapper({content: "test",type:"text",kind:"value"});
+					var $el = wrapper({content: "test",type:"text",kind:"value",name:"somename"});
 					expect($el).toBeA(jQuery);
 					expect($el).toBe("span");
 					expect($el.length).toEqual(1);
 					expect($el).toHaveHtml("test");
 					expect($el).toHaveClass("prop-value");
 					expect($el).toHaveClass("prop-text-value");
+					expect($el).toHaveAttr("prop-name","somename");
 				});
 				it("should wrap with given tag",function(){
 					var $el = wrapper({content: "test",type:"text",kind:"value",tag:"div"});
@@ -101,7 +102,9 @@ describe("the Mirage object", function() {
 					};
 					arg = {
 						value: "bar",
-						propdef: "foo"
+						propdef: {
+							name: "somename"
+						}
 					};
 					result = build.call(context,arg);
 					it("should call valueHtml with propdef and value",function(){
@@ -110,6 +113,7 @@ describe("the Mirage object", function() {
 					it("should elementwrapper with correct args ",function(){
 						expect(wrapspy).toHaveBeenCalledWith({
 							content: "bin",
+							name: "somename",
 							force: true
 						});
 					});

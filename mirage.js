@@ -45,6 +45,9 @@ this.Mirage = (function(){
 			if (o.attributes){
 				$el.attr(o.attributes);
 			}
+			if (o.name){
+				$el.attr("prop-name",o.name);
+			}
 			if (o.classes){
 				$el.addClass(o.classes);
 			}
@@ -69,6 +72,7 @@ this.Mirage = (function(){
 			}
 			return this.elementWrapper({
 				content: content,
+				name: o.propdef.name,
 				force: !o.editing
 			});
 		},
