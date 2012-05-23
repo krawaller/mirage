@@ -346,6 +346,7 @@ callback: for edit mode,
 		buildElement: function(opts){
 			var $el = $("<div>").addClass("model model-"+opts.type);
 			var props = opts.props;
+			this.views = {};
 			for(var key in props){
 				var prop = props[key];
 				var view = new this.propviewconstructors[prop.type]({
@@ -353,7 +354,7 @@ callback: for edit mode,
 					value: opts.model.attributes[prop.name],
 					editing: opts.editing
 				});
-				console.log(key,prop,view);
+				this.views[prop.name] = view;
 				$el.append(view.$el);
 			}
 			return $el;

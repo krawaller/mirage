@@ -57,7 +57,7 @@ describe("The Model functionality",function(){
 			var build = base.prototype.buildElement;
 			var Fakeview = function(o){
 				return {
-					whoami: o.name,
+					whoami: o.propdef.name,
 					$el: $("<span>").attr({
 						type: o.propdef.type,
 						name: o.propdef.name,
@@ -102,6 +102,10 @@ describe("The Model functionality",function(){
 				it("should have correct classes",function(){
 					expect($res).toHaveClass("model");
 					expect($res).toHaveClass("model-nicemodel");
+				});
+				it("should store the views in context",function(){
+					expect(context.views.foo.whoami).toEqual("foo");
+					expect(context.views.bar.whoami).toEqual("bar");
 				});
 				describe("the children",function(){
 					it("should have 2 kids",function(){
