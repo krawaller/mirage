@@ -1,7 +1,7 @@
 describe("the Property functionality", function() {
 
 	describe("the PropertyBaseView", function() {
-		var PropBaseView = Mirage.Property.Base;
+		var PropBaseView = Mirage.Property.base;
 		it("is defined", function() {
 			expect(Mirage).toBeAFunction();
 		});
@@ -379,12 +379,12 @@ describe("the Property functionality", function() {
 	});
 
 	describe("the PropertyTextView", function() {
-		var PropertyTextView = Mirage.Property.Text;
+		var PropertyTextView = Mirage.Property.text;
 		it("is defined", function() {
 			expect(typeof Mirage).toBeAFunction();
 		});
 		it("should inherit from PropBaseView", function() {
-			expect(PropertyTextView.__super__).toBe(Mirage.Property.Base.prototype);
+			expect(PropertyTextView.__super__).toBe(Mirage.Property.base.prototype);
 		});
 		describe("the edit html maker", function() {
 			var mkr = PropertyTextView.prototype.editHtml;
@@ -419,19 +419,19 @@ describe("the Property functionality", function() {
 			});
 			it("is a PropBaseView-produced backbone view instance", function() {
 				expect(view).toBeA(PropertyTextView);
-				expect(view).toBeA(Mirage.Property.Base);
+				expect(view).toBeA(Mirage.Property.base);
 				expect(view).toBeA(Backbone.View);
 			});
 		});
 	});
 
 	describe("the PropertyBoolView", function() {
-		var PropertyBoolView = Mirage.Property.Bool;
+		var PropertyBoolView = Mirage.Property.bool;
 		it("is defined", function() {
 			expect(typeof Mirage).toBeAFunction();
 		});
 		it("should inherit from PropBaseView", function() {
-			expect(PropertyBoolView.__super__).toBe(Mirage.Property.Base.prototype);
+			expect(PropertyBoolView.__super__).toBe(Mirage.Property.base.prototype);
 		});
 		describe("the edit element maker", function() {
 			var mkr = PropertyBoolView.prototype.editHtml;
@@ -505,19 +505,19 @@ describe("the Property functionality", function() {
 			});
 			it("is a PropBaseView-produced backbone view instance", function() {
 				expect(view).toBeA(PropertyBoolView);
-				expect(view).toBeA(Mirage.Property.Base);
+				expect(view).toBeA(Mirage.Property.base);
 				expect(view).toBeA(Backbone.View);
 			});
 		});
 	});
 
 	describe("the PropertySelectView", function() {
-		var PropertySelectView = Mirage.Property.Select;
+		var PropertySelectView = Mirage.Property.select;
 		it("is defined", function() {
 			expect(PropertySelectView).toBeAFunction();
 		});
 		it("should inherit from PropBaseView", function() {
-			expect(PropertySelectView.__super__).toBe(Mirage.Property.Base.prototype);
+			expect(PropertySelectView.__super__).toBe(Mirage.Property.base.prototype);
 		});
 		describe("the value html maker", function() {
 			var mkr = PropertySelectView.prototype.valueHtml;
@@ -661,17 +661,17 @@ describe("the Property functionality", function() {
 			});
 			it("is a PropBaseView-produced backbone view instance", function() {
 				expect(view).toBeA(PropertySelectView);
-				expect(view).toBeA(Mirage.Property.Base);
+				expect(view).toBeA(Mirage.Property.base);
 				expect(view).toBeA(Backbone.View);
 			});
 		});
 	});
 
 	describe("the property multiselect view", function() {
-		var PropertyMultiSelectView = Mirage.Property.MultiSelect;
+		var PropertyMultiSelectView = Mirage.Property.multiselect;
 
 		it("should inherit from PropBaseView", function() {
-			expect(PropertyMultiSelectView.__super__).toBe(Mirage.Property.Base.prototype);
+			expect(PropertyMultiSelectView.__super__).toBe(Mirage.Property.base.prototype);
 		});
 
 		describe("the value html maker", function() {
@@ -806,41 +806,10 @@ describe("the Property functionality", function() {
 			});
 		});
 
-		describe("the produced instance", function() {
-			var view = new PropertyMultiSelectView({
-				propdef: {
-					name: "foo",
-					options: [{
-						text: 'one',
-						val: 1
-					},
-					{
-						text: 'two',
-						val: 2
-					},
-					{
-						text: 'three',
-						val: 3
-					}]
-				},
-				kind: "label",
-				model: {
-					attributes: {
-						foo: [2, 3]
-					}
-				}
-			});
-			it("is a PropBaseView-produced backbone view instance", function() {
-				expect(view).toBeA(PropertyMultiSelectView);
-				expect(view).toBeA(Mirage.Property.Base);
-				expect(view).toBeA(Backbone.View);
-			});
-		});
-
 	});
 
 	describe("the hasone property view", function() {
-		var PropertyHasOneView = Mirage.Property.HasOne;
+		var PropertyHasOneView = Mirage.Property.hasone;
 		it("is defined", function() {
 			expect(PropertyHasOneView).toBeDefined();
 		});
@@ -848,7 +817,7 @@ describe("the Property functionality", function() {
 			expect(PropertyHasOneView.prototype.type).toEqual("hasone");
 		});
 		it("should inherit from PropSelectView", function() {
-			expect(PropertyHasOneView.__super__).toBe(Mirage.Property.Select.prototype);
+			expect(PropertyHasOneView.__super__).toBe(Mirage.Property.select.prototype);
 		});
 		describe("the preInit function", function() {
 			var pi = PropertyHasOneView.prototype.preInit;
@@ -878,18 +847,18 @@ describe("the Property functionality", function() {
 	});
 
 	describe("the hasmany property view", function() {
-		var PropertyHasManyView = Mirage.Property.HasMany;
+		var PropertyHasManyView = Mirage.Property.hasmany;
 		it("is defined", function() {
 			expect(PropertyHasManyView).toBeDefined();
 		});
 		it("has same preInit as hasone", function() {
-			expect(PropertyHasManyView.prototype.preInit).toBe(Mirage.Property.HasOne.prototype.preInit);
+			expect(PropertyHasManyView.prototype.preInit).toBe(Mirage.Property.hasone.prototype.preInit);
 		});
 		it("has correct type", function() {
 			expect(PropertyHasManyView.prototype.type).toEqual("hasmany");
 		});
 		it("should inherit from PropMultiSelectView", function() {
-			expect(PropertyHasManyView.__super__).toBe(Mirage.Property.MultiSelect.prototype);
+			expect(PropertyHasManyView.__super__).toBe(Mirage.Property.multiselect.prototype);
 		});
 	});
 

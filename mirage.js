@@ -1,14 +1,9 @@
 this.Mirage = (function(){
 
 	// ### Property views
-	// These views are used to display a single model property. There are 3 different flavours of display:
-	//
-	//*   *label*: will show the name of the property
-	//*   *value*: will show the value of the property
-	//*   *edit*: will show a control to edit the value of the property
-	//
-	// Each property type will have its own view (text,boolean,selectlist,etc), and each such type-specific
-	// view will be able to render the property in those three flavours.
+	// These views are used to display a single model property. 
+	// Each property type will have its own view (text,boolean,selectlist,etc). Each such type-specific
+	// view will be able to render label, value and edit html for that propery.
 
 	// #### Property base view
 	// An abstract baseclass, inherited by all Property views
@@ -17,10 +12,11 @@ this.Mirage = (function(){
 		
 		tagName: "span",
 		
-		// The initialize function needs a propdef (Property definition) and a kind (one of label,
-		// value or edit). It will store the propdef on the instance for later access, and build
-		// the correct element depending on the kind. If a `clickEvent` was supplied, we bind that
-		// to the element.
+		// The initialize function takes an option object containing:
+		// * `propdef`: a property definition object
+		// * `value`: the current value of the property (TODO: or?)
+		// * `[editing]`: set to true if edit control should be displayed instead of value
+		// * `[labelPosition]`: set to "before" or "after" if you want a label rendered
 		initialize: function(opts){
 			this.preInit && this.preInit(opts);
 			var o = opts.propdef, click = o.clickEvent;
@@ -56,7 +52,7 @@ this.Mirage = (function(){
 		
 		
 		// Called from `initialize`, passing the whole parameter object.
-		// Will call &lt;viewkind&gt;Html to create content, and pass along to elementWrapper
+		// Will call `&lt;viewkind&gt;Html` to create content, and pass along to `elementWrapper`
 		buildElement: function(o){
 			var content = this[(o.editing?"edit":"value")+"Html"](o.propdef,o.value);
 			if (o.labelPosition){
@@ -316,12 +312,23 @@ callback: for edit mode,
 		}
 	});
 	
+	var viewconstrpackage = {
+		base: PropertyBaseView,
+		text: PropertyTextView,
+		bool: PropertyBoolView,
+		select: PropertySelectView,
+		multiselect: PropertyMultiSelectView,
+		hasone: PropertyHasOneView,
+		hasmany: PropertyHasManyView
+	};
+	
 	
 // Model base view
 	var ModelBaseView = Backbone.View.extend({
+		propviewconstructors: viewconstrpackage,
 		setPropClickHandler: function(opts){
 			var me = this;
-			this.$el.click(function(e){
+			this.$el.on("click",".prop",function(e){
 				var key = $(e.target).closest(".prop-multi").attr("key"),
 					name = $(e.target).closest(".prop").attr("prop-name"),
 					type = opts.propdef.type,
@@ -335,19 +342,26 @@ callback: for edit mode,
 				me.trigger("propclick:"+type,o);
 				me.trigger("propclick:"+type+":"+name,o);
 			});
+		},
+		buildElement: function(opts){
+			var $el = $("<div>").addClass("model model-"+opts.type);
+			var props = opts.props;
+			for(var key in props){
+				var prop = props[key];
+				var view = new this.propviewconstructors[prop.type]({
+					propdef: prop,
+					value: opts.model.attributes[prop.name],
+					editing: opts.editing
+				});
+				console.log(key,prop,view);
+				$el.append(view.$el);
+			}
+			return $el;
 		}
 	});
 	
 	return {
-		Property: {
-			Base: PropertyBaseView,
-			Text: PropertyTextView,
-			Bool: PropertyBoolView,
-			Select: PropertySelectView,
-			MultiSelect: PropertyMultiSelectView,
-			HasOne: PropertyHasOneView,
-			HasMany: PropertyHasManyView
-		},
+		Property: viewconstrpackage,
 		Model: {
 			Base: ModelBaseView
 		}
