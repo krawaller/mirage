@@ -35,7 +35,7 @@ this.Mirage = (function(){
 		elementWrapper: function(o){
 			o = _.defaults(o||{},{
 				tag: "span",
-				classes: "prop-"+o.kind+" prop-"+o.type+"-"+o.kind
+				classes: "prop prop-"+o.kind+" prop-"+o.type+"-"+o.kind
 			});
 			var $el = $(o.content);
 			if (o.force || $el.length !== 1){
@@ -179,6 +179,7 @@ this.Mirage = (function(){
 
 	// #### MultiSelect property view
 	// Same as select, but allows multiple values. Exact same API.
+	// Sets a 'key' attribute on the value view, so we can see which was clicked
 	var PropertyMultiSelectView = PropertyBaseView.extend({
 		editHtml: function(o,val){
 			var optstr = "", opts = o.options, valprop = o.valueProp || "val";
@@ -202,10 +203,11 @@ this.Mirage = (function(){
 			_.each(sel,function(opt){
 				ret += me.elementWrapper({
 					content: o.makeValue ? o.makeValue(opt) : opt.text,
+					classes: "prop-multi",
 					attributes: {
 						key: opt[valprop]
 					}
-				})[0].outerHTML; //"<span key='"+opt[valprop]+"'>"+(o.makeValue ? o.makeValue(opt) : opt.text)+"</span>";
+				})[0].outerHTML;
 			});
 			return ret;
 		}
@@ -241,7 +243,7 @@ this.Mirage = (function(){
 	var relationPreInit = function(opts){
 		this.valueProp = opts.valueProp || "id";
 		this.options = opts.collection.models;
-	}
+	};
 	
 	// The HasOne view, inheriting from SelectView
 	var PropertyHasOneView = PropertySelectView.extend({
@@ -315,15 +317,39 @@ callback: for edit mode,
 	});
 	
 	
+// Model base view
+	var ModelBaseView = Backbone.View.extend({
+		setPropClickHandler: function(opts){
+			var me = this;
+			this.$el.click(function(e){
+				var key = $(e.target).closest(".prop-multi").attr("key"),
+					name = $(e.target).closest(".prop").attr("prop-name"),
+					type = opts.propdef.type,
+					o = {
+						propdef: opts.propdef,
+						model: opts.model,
+						key: key,
+						name: name
+					};
+				me.trigger("propclick",o);
+				me.trigger("propclick:"+type,o);
+				me.trigger("propclick:"+type+":"+name,o);
+			});
+		}
+	});
+	
 	return {
 		Property: {
-			BaseView: PropertyBaseView,
-			TextView: PropertyTextView,
-			BoolView: PropertyBoolView,
-			SelectView: PropertySelectView,
-			MultiSelectView: PropertyMultiSelectView,
-			HasOneView: PropertyHasOneView,
-			HasManyView: PropertyHasManyView
+			Base: PropertyBaseView,
+			Text: PropertyTextView,
+			Bool: PropertyBoolView,
+			Select: PropertySelectView,
+			MultiSelect: PropertyMultiSelectView,
+			HasOne: PropertyHasOneView,
+			HasMany: PropertyHasManyView
+		},
+		Model: {
+			Base: ModelBaseView
 		}
 	};
 }());
