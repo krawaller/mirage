@@ -53,6 +53,25 @@ describe("The Model functionality",function(){
 				});
 			});
 		});
+
+		describe("the getInputValues function",function(){
+			var getvals = base.prototype.getInputValues;
+			var context = {
+				views: {
+					foo: {
+						getInputValue: function(){return 1;},
+					},
+					bar: {
+						getInputValue: function(){return 2;},
+					}
+				}
+			};
+			var res = getvals.call(context);
+			it("should return an object with vals from individual propviews",function(){
+				expect(res).toEqual({foo:1,bar:2});
+			});
+		});
+
 		describe("the buildElement function",function(){
 			var build = base.prototype.buildElement;
 			var Fakeview = function(o){

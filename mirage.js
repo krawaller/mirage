@@ -1,6 +1,6 @@
 this.Mirage = (function(){
 
-	// ### Property views
+	// ### Property functionality
 	// These views are used to display a single model property. 
 	// Each property type will have its own view (text,boolean,selectlist,etc). Each such type-specific
 	// view will be able to render label, value and edit html for that propery.
@@ -323,9 +323,15 @@ callback: for edit mode,
 	};
 	
 	
-// Model base view
+	// ### Model functionality
+	
+	// #### Model base view
 	var ModelBaseView = Backbone.View.extend({
+		// An object with links to all property view constructors, accessed by type key. Used in 
+		// `buildElemenent` function to instantiate individual property views.
 		propviewconstructors: viewconstrpackage,
+		// Called from `initialize` with same arguments. Responsible for setting the clickhandler
+		// that will fire a normalized event when a property view is clicked.
 		setPropClickHandler: function(opts){
 			var me = this;
 			this.$el.on("click",".prop",function(e){
@@ -343,6 +349,20 @@ callback: for edit mode,
 				me.trigger("propclick:"+type+":"+name,o);
 			});
 		},
+		// Loops the property views stored in the `views` context property, and calls `getInputValue`
+		// for each. Returns an object property names and values. Used to collect all data from a
+		// model edit form.
+		getInputValues: function(){
+			var ret = {};
+			for(var name in this.views){
+				ret[name] = this.views[name].getInputValue();
+			}
+			return ret;
+		},
+		
+		// Called from `initialize`, with same arguments. Will loop the definitions in `props` option
+		// and create a view for each, append the result to the element, and also store the views in
+		// a `views` property on the context for later access.
 		buildElement: function(opts){
 			var $el = $("<div>").addClass("model model-"+opts.type);
 			var props = opts.props;
