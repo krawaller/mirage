@@ -55,6 +55,22 @@ describe("The Model functionality", function() {
 			});
 		});
 
+		describe("the initialize function",function(){
+			var init = base.prototype.initialize;
+			var arg = {
+				model: {
+					on: jasmine.createSpy()
+				}
+			};
+			var context = {
+				updatePropViews: jasmine.createSpy()
+			};
+			init.call(context,arg);
+			it("should set event listener on the model",function(){
+				expect(arg.model.on).toHaveBeenCalledWith("change",context.updatePropViews,context);
+			});
+		});
+
 		describe("the getInputValues function", function() {
 			var getvals = base.prototype.getInputValues;
 			var context = {
@@ -62,12 +78,12 @@ describe("The Model functionality", function() {
 					foo: {
 						getInputValue: function() {
 							return 1;
-						},
+						}
 					},
 					bar: {
 						getInputValue: function() {
 							return 2;
-						},
+						}
 					}
 				}
 			};
@@ -77,6 +93,29 @@ describe("The Model functionality", function() {
 					foo: 1,
 					bar: 2
 				});
+			});
+		});
+
+		describe("the updatePropViews function",function(){
+			var upd = base.prototype.updatePropViews;
+			var context = {
+				views: {
+					foo: {
+						updateValueElement: jasmine.createSpy()
+					},
+					bar: {
+						updateValueElement: jasmine.createSpy()
+					}
+				}
+			};
+			upd.call(context,{
+				foo: "newfoo",
+				bar: "newbar",
+				baz: "newbaz"
+			});
+			it("should call updatePropView for the relevant views",function(){
+				expect(context.views.foo.updateValueElement).toHaveBeenCalledWith("newfoo");
+				expect(context.views.bar.updateValueElement).toHaveBeenCalledWith("newbar");
 			});
 		});
 
@@ -171,7 +210,7 @@ describe("The Model functionality", function() {
 					props: props,
 					model: model,
 					type: "nicemodel",
-					editing: "whatever",
+					editing: "whatever"
 				};
 				var $res = build.call(context, arg);
 				it("should use all properties",function(){

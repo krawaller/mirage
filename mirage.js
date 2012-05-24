@@ -69,11 +69,11 @@ this.Mirage = (function(){
 			});
 		},
 		
-		// The callback used to update a value propview when the model attribute changes.
+		// Called from the parent model view.
 		// This default implementation will simply repopulate the element with a new
 		// call to `valueHtml`.
-		updateValueElement: function(){ // TODO - make this more clever, so u don't remove label!
-			this.$el.html(this.valueHtml(this.propdef,this.model.attributes[this.propdef.name]));
+		updateValueElement: function(newval){
+			this.$el.find(".prop-value").html(this.valueHtml(this.propdef,newval));
 		},
 		
 		// Default implementation of generating content for a label element. Will simply use the name
@@ -209,79 +209,21 @@ this.Mirage = (function(){
 	// Inherits from select/multiselect. Needs a `collection`, will use that as options.
 	// If a `modelClick` callback is given, a clickhandler will be set on the value element.
 	
-	var relationPreInit = function(opts){
-		this.valueProp = opts.valueProp || "id";
-		this.options = opts.collection.models;
-	};
-	
 	// The HasOne view, inheriting from SelectView
 	var PropertyHasOneView = PropertySelectView.extend({
 		type: "hasone",
-		preInit: relationPreInit
+		preInit: function(opts){
+			this.valueProp = opts.valueProp || "id";
+			this.options = opts.collection.models;
+		}
 	});
 	
 	// The HasMany view, inheriting from MultiSelectView
 	var PropertyHasManyView = PropertyMultiSelectView.extend({
 		type: "hasmany",
-		preInit: relationPreInit
+		preInit: PropertyHasOneView.prototype.preInit
 	});
 
-
-/* OLD CODE BELOW HERE */
-
-	var PROPVIEWS = {
-		text: PropertyTextView
-	};
-	var MirageModelView = Backbone.View.extend({
-		/*
-show: array (optional) of props to show
-kind: naked/label/edit
-model
-callback: for edit mode, 
-
-		*/
-		initialize: function(opts){
-			if (!opts.show){
-				var arr = [];
-				for (var p in opts.model.attributes){
-					arr.push(p);
-				}
-				opts.show = arr;
-			}
-			this.kind = opts.kind;
-			this.show = opts.show;
-			this.props = opts.props;
-			this.callback = opts.callback;
-		},
-		events: {
-			"click .savebtn": function(){
-				this.callback(this.getvalue());
-			}
-		},
-		render: function(){
-			var props = this.attributes, propviews = [];
-			this.$el.empty();
-			_.each(this.show,function(pname){
-				var prop = props[pname], view = new PROPVIEWS[prop.type]({
-					kind: this.kind,
-					propdef: prop
-				});
-				this.$el.append(view.render().el);
-				propviews.push(view);
-			});
-			this.propviews = propviews;
-			if (this.kind === "edit"){
-				this.$el.append("<div><input type='button' class='savebtn'>Save</input></div>");
-			}
-		},
-		getValue: function(){
-			var o, views = this.propviews;
-			_.each(views,function(view){
-				o[view.name] = view.getValue();
-			});
-			return o;
-		}
-	});
 	
 	var viewconstrpackage = {
 		base: PropertyBaseView,
@@ -301,6 +243,20 @@ callback: for edit mode,
 		// An object with links to all property view constructors, accessed by type key. Used in 
 		// `buildElemenent` function to instantiate individual property views.
 		propviewconstructors: viewconstrpackage,
+		
+		
+		initialize: function(opts){
+			opts.model.on("change",this.updatePropViews,this);
+		},
+		
+		
+		// callback for changes in `model`, will update each propertyview
+		updatePropViews: function(props){
+			for(var prop in props){
+				this.views[prop] && this.views[prop].updateValueElement(props[prop]);
+			}
+		},
+		
 		// Called from `initialize` with same arguments. Responsible for setting the clickhandler
 		// that will fire a normalized event when a property view is clicked.
 		setPropClickHandler: function(opts){
@@ -333,6 +289,7 @@ callback: for edit mode,
 		
 		// Called from `initialize`, with same arguments. Will look at the `render` instruction, and
 		// create a view for each property listed there, using the definition found in `props` option.
+		// The views will be supplied with the current value for the property, collected from `model`.
 		// All used views are stored in a `views` property on the context for later access.
 		// If no `render` instruction is provided, all properties are shown, with labels.
 		buildElement: function(opts){
@@ -341,7 +298,7 @@ callback: for edit mode,
 				opts.render = {
 					props: _.keys(opts.props),
 					showlabel: true
-				}
+				};
 			}
 			var props = opts.props,
 				torender = opts.render.props;

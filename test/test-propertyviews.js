@@ -237,24 +237,24 @@ describe("the Property functionality", function() {
 		});
 
 		describe("the updateValueElement function", function() {
-			var htmlspy = jasmine.createSpy(),
+			var findspy = jasmine.createSpy(), htmlspy = jasmine.createSpy(),
 				context = {
 				$el: {
-					html: htmlspy
+					find: function(o){
+						findspy(o);
+						return {
+							html: htmlspy
+						};
+					}
 				},
 				propdef: {
 					name: "foo"
-				},
-				model: {
-					attributes: {
-						foo: "BAR"
-					}
 				},
 				valueHtml: function(o, val) {
 					return o.name + val;
 				}
 			};
-			PropBaseView.prototype.updateValueElement.call(context);
+			PropBaseView.prototype.updateValueElement.call(context,"BAR");
 			it("should set the elements html to result from valueHtml call", function() {
 				expect(htmlspy).toHaveBeenCalledWith("fooBAR");
 			});
