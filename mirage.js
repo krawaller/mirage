@@ -244,14 +244,16 @@ this.Mirage = (function(){
 		// `buildElemenent` function to instantiate individual property views.
 		propviewconstructors: viewconstrpackage,
 		
-		
 		events: {
 			"click .prop": "propClickHandler"
 		},
 		
-		// Model view inititialization. Sets change listener.
+		render: function(){return this;},
+		
+		// Model view inititialization
 		initialize: function(opts){
 			opts.model.on("change",this.propUpdateHandler,this);
+			this.setElement(this.buildElement(opts));
 		},
 		
 		// callback for changes in `model`, will update each propertyview
@@ -280,26 +282,6 @@ this.Mirage = (function(){
 			this.trigger("propclick:"+type+":"+name,o);
 		},
 		
-		// Called from `initialize` with same arguments. Responsible for setting the clickhandler
-		// that will fire a normalized event when a property view is clicked.
-		setPropClickHandler: function(e){
-			var me = this;
-			this.$el.on("click",".prop",function(e){
-				var key = $(e.target).closest(".prop-multi").attr("key"),
-					name = $(e.target).closest(".prop").attr("prop-name"),
-					opts = this.options,
-					type = opts.propdef.type,
-					o = {
-						propdef: opts.propdef,
-						model: opts.model,
-						key: key,
-						name: name
-					};
-				this.trigger("propclick",o);
-				this.trigger("propclick:"+type,o);
-				this.trigger("propclick:"+type+":"+name,o);
-			});
-		},
 		// Loops the property views stored in the `views` context property, and calls `getInputValue`
 		// for each. Returns an object property names and values. Used to collect all data from a
 		// model edit form.
@@ -343,10 +325,39 @@ this.Mirage = (function(){
 		}
 	});
 	
+	// ### Collection functionality
+	
+	// #### Collection base view
+	
+	var CollectionBaseView = Backbone.View.extend({
+		modelviewconstructor: ModelBaseView,
+		initialize: function(opts){
+			
+		},
+		addModelView: function(model){
+			var opts = this.options, view = new this.modelviewconstructor({
+				model: model,
+				render: opts.render,
+				props: opts.props,
+				type: opts.type
+			});
+			this.views[model.cid] = view;
+			this.$el.append(view.$el);
+		},
+		removeModelView: function(model){
+			this.views[model.cid].remove();
+			delete this.views[model.cid];
+		}
+	});
+	
+	
 	return {
 		Property: viewconstrpackage,
 		Model: {
-			Base: ModelBaseView
+			base: ModelBaseView
+		},
+		Collection: {
+			base: CollectionBaseView
 		}
 	};
 }());

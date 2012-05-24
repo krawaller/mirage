@@ -3,13 +3,14 @@ describe("The Model functionality", function() {
 		expect(Mirage.Model).toBeA(Object);
 	});
 	describe("the model base view", function() {
-		var base = Mirage.Model.Base;
+		var base = Mirage.Model.base;
 		it("should inherit from Backbone View", function() {
 			expect(base.__super__).toBe(Backbone.View.prototype);
 		});
 		it("should have a link to the property view constructors", function() {
 			expect(base.prototype.propviewconstructors).toBe(Mirage.Property);
 		});
+		
 		describe("the propClickHandler function", function() {
 			var click = base.prototype.propClickHandler;
 			it("should be defined", function() {
@@ -62,18 +63,31 @@ describe("The Model functionality", function() {
 		});
 
 		describe("the initialize function",function(){
-			var init = base.prototype.initialize;
+			var init = base.prototype.initialize,
+				buildspy = jasmine.createSpy();
 			var arg = {
 				model: {
 					on: jasmine.createSpy()
-				}
+				},
+				somedata:"baz"
 			};
 			var context = {
 				propUpdateHandler: {foo:"bar"},
+				setElement: jasmine.createSpy(),
+				buildElement: function(o){
+					buildspy(o);
+					return o.somedata
+				}
 			};
 			init.call(context,arg);
 			it("should set event listener on the model",function(){
 				expect(arg.model.on).toHaveBeenCalledWith("change",context.propUpdateHandler,context);
+			});
+			it("should call buildElement with the args obj",function(){
+				expect(buildspy).toHaveBeenCalledWith(arg);
+			});
+			it("should call setElement with result from buildelement",function(){
+				expect(context.setElement).toHaveBeenCalledWith(arg.somedata);
 			});
 		});
 
