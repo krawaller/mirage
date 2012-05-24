@@ -240,9 +240,6 @@ this.Mirage = (function(){
 	
 	// #### Model base view
 	var ModelBaseView = Backbone.View.extend({
-		// An object with links to all property view constructors, accessed by type key. Used in 
-		// `buildElemenent` function to instantiate individual property views.
-		propviewconstructors: viewconstrpackage,
 		
 		events: {
 			"click .prop": "propClickHandler"
@@ -330,10 +327,19 @@ this.Mirage = (function(){
 	// #### Collection base view
 	
 	var CollectionBaseView = Backbone.View.extend({
-		modelviewconstructor: ModelBaseView,
 		initialize: function(opts){
 			opts.collection.on("add","addModelView",this);
 			opts.collection.on("remove","removeModelView",this);
+			this.setElement(this.buildElement(opts));
+			this.addAllModels(opts.collection.models);
+		},
+		buildElement: function(opts){
+			return $("<div>").addClass("collection collection-"+opts.type).attr("model-type",opts.type);
+		},
+		addAllModels: function(models){
+			for(var i=0,l=models.length; i<l; i++){
+				this.addModelView(models[i]);
+			}
 		},
 		addModelView: function(model){
 			var opts = this.options, view = new this.modelviewconstructor({
@@ -350,6 +356,11 @@ this.Mirage = (function(){
 			delete this.views[model.cid];
 		}
 	});
+	
+	// ### Cross-pollination shortcuts
+	CollectionBaseView.prototype.modelviewconstructor = ModelBaseView;
+	ModelBaseView.prototype.collectionviewconstructor = CollectionBaseView;
+	ModelBaseView.prototype.propviewconstructors = viewconstrpackage;
 	
 	
 	return {

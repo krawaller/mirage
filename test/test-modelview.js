@@ -10,7 +10,9 @@ describe("The Model functionality", function() {
 		it("should have a link to the property view constructors", function() {
 			expect(base.prototype.propviewconstructors).toBe(Mirage.Property);
 		});
-		
+		it("should have a link to the collection view constructor", function() {
+			expect(base.prototype.collectionviewconstructor).toBe(Mirage.Collection.base);
+		});
 		describe("the propClickHandler function", function() {
 			var click = base.prototype.propClickHandler;
 			it("should be defined", function() {
