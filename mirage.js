@@ -332,7 +332,8 @@ this.Mirage = (function(){
 	var CollectionBaseView = Backbone.View.extend({
 		modelviewconstructor: ModelBaseView,
 		initialize: function(opts){
-			
+			opts.collection.on("add","addModelView",this);
+			opts.collection.on("remove","removeModelView",this);
 		},
 		addModelView: function(model){
 			var opts = this.options, view = new this.modelviewconstructor({
