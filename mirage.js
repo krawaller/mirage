@@ -53,20 +53,26 @@ this.Mirage = (function(){
 		// Called from `initialize`, passing the whole parameter object.
 		// Will call `&lt;viewkind&gt;Html` to create content, and pass along to `elementWrapper`
 		buildElement: function(o){
-			var content = this[(o.editing?"edit":"value")+"Html"](o.propdef,o.value);
-			if (o.showlabel || o.editing){
-				var lbl = this.labelHtml(o.propdef,o.value);
-				if (o.editing){
-					lbl = "<label for='"+o.propdef.name+"'>"+lbl+"</label>";
-				}
-				content = lbl + content;
-			}
-			return this.elementWrapper({
+			var type = o.propdef.type, name = o.propdef.name, kind = (o.editing?"edit":"value"),
+				content = "<span>"+this[kind+"Html"](o.propdef,o.value)+"</span>";
+			content = this.elementWrapper({
 				content: content,
-				name: o.propdef.name,
-				force: !o.editing,
-				type: o.propdef.type
-			});
+				classes: "prop-"+kind+" prop-"+type+"-"+kind+" prop-"+type+"-"+name+"-"+kind
+			}).get(0);
+			var $el = $("<span>").addClass("prop prop-"+type+" prop-"+type+"-"+name),
+				main = $(content).addClass("prop-"+kind+" prop-"+type+"-"+kind+" prop-"+type+"-"+name+"-"+kind);
+			$el.append(main);
+			if(o.showlabel || o.editing){
+				var labelhtml = this.labelHtml(o.propdef,o.value);
+				if (o.editing){
+					labelhtml = "<label for='"+name+"'>"+labelhtml+"</label>";
+				}
+				lbl = $("<span>").html(labelhtml)
+					.addClass("prop-label prop-"+type+"-label prop-"+type+"-"+name+"-label");
+				$el.prepend(lbl);
+			}
+			$el.attr("prop-name",name);
+			return $el;
 		},
 		
 		// Called from the parent model view.
@@ -254,9 +260,11 @@ this.Mirage = (function(){
 		},
 		
 		// callback for changes in `model`, will update each propertyview
-		propUpdateHandler: function(props){
-			for(var prop in props){
-				this.views[prop] && this.views[prop].updateValueElement(props[prop]);
+		propUpdateHandler: function(model){
+			for(var prop in this.views){
+				if (model.hasChanged(prop)){
+					this.views[prop] && this.views[prop].updateValueElement(model.attributes[prop]);
+				}
 			}
 		},
 
@@ -265,8 +273,8 @@ this.Mirage = (function(){
 		propClickHandler: function(e){
 			var key = $(e.target).closest(".prop-multi").attr("key"),
 				name = $(e.target).closest(".prop").attr("prop-name"),
-				opts = this.options,
-				type = opts.props[name].type,
+				opts = this.options;
+			var type = opts.props[name].type,
 				o = {
 					propdef: opts.propdef,
 					model: opts.model,

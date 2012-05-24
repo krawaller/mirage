@@ -3,11 +3,20 @@
   <title>Mirage testing</title>
 </head>
 <body>
-	<div id="wrapper"></div>
+	<div id="wrapper"></div><div id="edit"></div>
 
 <style type="text/css">
-.label {
-	color: #333;
+.prop-label {
+	color: #BBB;
+	font-size: 0.8em;
+	margin-right: 0.5em;
+}
+.prop-value {
+	margin-right: 0.5em;
+}
+
+.prop-label:after {
+	content: ":";
 }
 </style>
 
@@ -17,23 +26,38 @@
 <script type="text/javascript" src="../mirage.js"></script>
 
 <script>
+	var props = {
+		name: {
+			name: "name",
+			type: "text"
+		},
+		age: {
+			name: "age",
+			type: "text"
+		}
+	};
 	var people = new Backbone.Collection([{name:"fred",age:22},{name:"stooge",age:45},{name:"foo",age:91}]);
 	var peopleView = new Mirage.Collection.base({
 		collection: people,
 		type: "people",
-		props: {
-			name: {
-				name: "name",
-				type: "text"
-			},
-			age: {
-				name: "age",
-				type: "text"
-			}
+		props: props,
+		render: {
+			props: ["name","age"],
+			showlabel: false
 		}
 	});
 	peopleView.on("modelclick",function(o){
-		console.log("wooo,clicked",o);
+		var editView = new Mirage.Model.base({
+			model: o.model,
+			type: "people",
+			editing: true,
+			props: props
+		});
+		$("#edit").empty().append(editView.$el);
+		$("<input type='button' value='woo'>").click(function(){
+			o.model.set(editView.getInputValues());
+			$("#edit").empty();
+		}).appendTo($("#edit"));
 	});
 	$("#wrapper").append(peopleView.$el);
 	
