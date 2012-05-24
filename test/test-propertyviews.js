@@ -41,7 +41,6 @@ describe("the Property functionality", function() {
 				var $el = wrapper({
 					content: "test",
 					type: "text",
-					kind: "value",
 					name: "somename"
 				});
 				expect($el).toBeA(jQuery);
@@ -49,8 +48,8 @@ describe("the Property functionality", function() {
 				expect($el.length).toEqual(1);
 				expect($el).toHaveHtml("test");
 				expect($el).toHaveClass("prop");
-				expect($el).toHaveClass("prop-value");
-				expect($el).toHaveClass("prop-text-value");
+				expect($el).toHaveClass("prop-text");
+				expect($el).toHaveClass("prop-text-somename");
 				expect($el).toHaveAttr("prop-name", "somename");
 			});
 			it("should wrap with given tag", function() {

@@ -23,8 +23,10 @@ describe("The Model functionality", function() {
 			var context = {
 				options: {
 					model: "woot",
-					propdef: {
-						type: "sometype"
+					props: {
+						someprop: {
+							type: "sometype"
+						}
 					}
 				},
 				trigger: function(evt, arg) {
@@ -181,7 +183,8 @@ describe("The Model functionality", function() {
 					foo: "fooval",
 					bar: "barval",
 					bin: "binval"
-				}
+				},
+				cid: 666
 			};
 			var render = {
 				props: ["foo", "bar"],
@@ -204,6 +207,9 @@ describe("The Model functionality", function() {
 					it("should have correct classes", function() {
 						expect($res).toHaveClass("model");
 						expect($res).toHaveClass("model-nicemodel");
+					});
+					it("should have cid as attr",function(){
+						expect($res).toHaveAttr("cid",666);
 					});
 					it("should store the views in context", function() {
 						expect(context.views.foo.whoami).toEqual("foo");

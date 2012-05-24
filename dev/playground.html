@@ -1,0 +1,41 @@
+<html>
+<head>
+  <title>Mirage testing</title>
+</head>
+<body>
+	<div id="wrapper"></div>
+
+<style type="text/css">
+.label {
+	color: #333;
+}
+</style>
+
+<script type="text/javascript" src="../libs/underscore-min.js"></script>
+<script type="text/javascript" src="../libs/jquery-min.js"></script>
+<script type="text/javascript" src="../libs/backbone-min.js"></script>
+<script type="text/javascript" src="../mirage.js"></script>
+
+<script>
+	var people = new Backbone.Collection([{name:"fred",age:22},{name:"stooge",age:45},{name:"foo",age:91}]);
+	var peopleView = new Mirage.Collection.base({
+		collection: people,
+		type: "people",
+		props: {
+			name: {
+				name: "name",
+				type: "text"
+			},
+			age: {
+				name: "age",
+				type: "text"
+			}
+		}
+	});
+	peopleView.on("modelclick",function(o){
+		console.log("wooo,clicked",o);
+	});
+	$("#wrapper").append(peopleView.$el);
+	
+</script>
+</body>

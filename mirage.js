@@ -16,14 +16,13 @@ this.Mirage = (function(){
 		// * `propdef`: a property definition object
 		// * `value`: the current value of the property (TODO: or?)
 		// * `[editing]`: set to true if edit control should be displayed instead of value
-		// * `[labelPosition]`: set to "before" or "after" if you want a label rendered
+		// * `[showlabel]`: boolean. Label is always drawn if `editing` is true.
 		initialize: function(opts){
 			this.preInit && this.preInit(opts);
 			var o = opts.propdef, click = o.clickEvent;
 			this.propdef = o;
 			this.value = opts.value;
 			this.setElement(this.buildElement(opts));
-			//his.$el.addClass("prop-"+o.type);
 		},
 		
 		// Used in `buildElement`. Responsible for wrapping content in tag (if needed),
@@ -31,7 +30,7 @@ this.Mirage = (function(){
 		elementWrapper: function(o){
 			o = _.defaults(o||{},{
 				tag: "span",
-				classes: "prop prop-"+o.kind+" prop-"+o.type+"-"+o.kind
+				classes: "prop prop-"+o.type+" prop-"+o.type+"-"+o.name
 			});
 			var $el = $(o.content);
 			if (o.force || $el.length !== 1){
@@ -65,7 +64,8 @@ this.Mirage = (function(){
 			return this.elementWrapper({
 				content: content,
 				name: o.propdef.name,
-				force: !o.editing
+				force: !o.editing,
+				type: o.propdef.type
 			});
 		},
 		
@@ -266,7 +266,7 @@ this.Mirage = (function(){
 			var key = $(e.target).closest(".prop-multi").attr("key"),
 				name = $(e.target).closest(".prop").attr("prop-name"),
 				opts = this.options,
-				type = opts.propdef.type,
+				type = opts.props[name].type,
 				o = {
 					propdef: opts.propdef,
 					model: opts.model,
@@ -296,7 +296,7 @@ this.Mirage = (function(){
 		// All used views are stored in a `views` property on the context for later access.
 		// If no `render` instruction is provided, all properties are shown, with labels.
 		buildElement: function(opts){
-			var $el = $("<div>").addClass("model model-"+opts.type);
+			var $el = $("<div>").addClass("model model-"+opts.type).attr("cid",opts.model.cid);
 			if (!opts.render){
 				opts.render = {
 					props: _.keys(opts.props),
@@ -327,20 +327,35 @@ this.Mirage = (function(){
 	// #### Collection base view
 	
 	var CollectionBaseView = Backbone.View.extend({
+		
+		events: {
+			"click .model": "modelClickHandler"
+		},
+		
+		views: {},
+		
 		initialize: function(opts){
 			opts.collection.on("add","addModelView",this);
 			opts.collection.on("remove","removeModelView",this);
 			this.setElement(this.buildElement(opts));
 			this.addAllModels(opts.collection.models);
 		},
+		
+		// Called from `initialize`. Merely provides the encapsulating div, the content is later
+		// provided by the `addModelView` function
 		buildElement: function(opts){
 			return $("<div>").addClass("collection collection-"+opts.type).attr("model-type",opts.type);
 		},
+		
+		// Called from `initialize`. Will loop through all models and send them to `addModelView`.
 		addAllModels: function(models){
 			for(var i=0,l=models.length; i<l; i++){
 				this.addModelView(models[i]);
 			}
 		},
+		
+		// Called from `addAllModels`, and as listener to collection `add` event. Instantiates a
+		// new modelview, stores it, and adds its element to the DOM.
 		addModelView: function(model){
 			var opts = this.options, view = new this.modelviewconstructor({
 				model: model,
@@ -351,9 +366,24 @@ this.Mirage = (function(){
 			this.views[model.cid] = view;
 			this.$el.append(view.$el);
 		},
+		
+		// Used as listener to collection `remove` event. Removes the related view and deletes
+		// the reference.
 		removeModelView: function(model){
 			this.views[model.cid].remove();
 			delete this.views[model.cid];
+		},
+		
+		// Set from `initialize` as clickhandler. Will fire normalized events on the collection
+		// when user clicks on an individual model view.
+		modelClickHandler: function(e){
+			var cid = $(e.target).closest(".model").attr("cid"),
+				data = {
+					model: this.options.collection.getByCid(cid),
+					type: this.options.type
+				};
+			this.trigger("modelclick",data);
+			this.trigger("modelclick:"+data.type,data);
 		}
 	});
 	
