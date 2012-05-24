@@ -10,48 +10,54 @@ describe("The Model functionality", function() {
 		it("should have a link to the property view constructors", function() {
 			expect(base.prototype.propviewconstructors).toBe(Mirage.Property);
 		});
-		describe("the setPropClickHandler function", function() {
-			var set = base.prototype.setPropClickHandler;
+		describe("the propClickHandler function", function() {
+			var click = base.prototype.propClickHandler;
 			it("should be defined", function() {
-				expect(typeof set).toEqual("function");
+				expect(typeof click).toEqual("function");
 			});
-			describe("the property click handler", function() {
-				var triggerevents = {},
-					data;
-				var context = {
-					trigger: function(evt, arg) {
-						data = arg;
-						triggerevents[evt] = true;
-					},
-					$el: $("<div><span class='prop'><span id='target' key='5' class='prop-multi'>foo</span><span key='4' class='prop-multi'>foo</span></span></div>")
-				};
-				context.$el.find("span").eq(0).attr("prop-name", "someprop");
-				var arg = {
+			var triggerevents = {},
+				data;
+			var context = {
+				options: {
 					model: "woot",
 					propdef: {
 						type: "sometype"
 					}
-				};
-				set.call(context, arg);
-				context.$el.find("#target").click();
-				it("should fire propclick event", function() {
-					expect(triggerevents["propclick"]).toBeTruthy();
-				});
-				it("should fire propclick:<type> event", function() {
-					expect(triggerevents["propclick:sometype"]).toBeTruthy();
-				});
-				it("should fire propclick:<type>:<name> event", function() {
-					expect(triggerevents["propclick:sometype:someprop"]).toBeTruthy();
-				});
-				it("should send the model", function() {
-					expect(data.model).toEqual(arg.model);
-				});
-				it("should send the propdef", function() {
-					expect(data.propdef).toEqual(arg.propdef);
-				});
-				it("should send the multikey if exists", function() {
-					expect(data.key).toEqual("5");
-				});
+				},
+				trigger: function(evt, arg) {
+					data = arg;
+					triggerevents[evt] = true;
+				}
+			};
+			var $el = $("<div><span class='prop'><span id='target' key='5' class='prop-multi'>foo</span><span key='4' class='prop-multi'>foo</span></span></div>");
+			$el.find("span").eq(0).attr("prop-name", "someprop");
+			click.call(context,{
+				target: $el.find("#target")
+			});
+			it("should fire propclick event", function() {
+				expect(triggerevents["propclick"]).toBeTruthy();
+			});
+			it("should fire propclick:<type> event", function() {
+				expect(triggerevents["propclick:sometype"]).toBeTruthy();
+			});
+			it("should fire propclick:<type>:<name> event", function() {
+				expect(triggerevents["propclick:sometype:someprop"]).toBeTruthy();
+			});
+			it("should send the model", function() {
+				expect(data.model).toEqual(context.options.model);
+			});
+			it("should send the propdef", function() {
+				expect(data.propdef).toEqual(context.options.propdef);
+			});
+			it("should send the multikey if exists", function() {
+				expect(data.key).toEqual("5");
+			});
+		});
+
+		describe("the events object",function(){
+			var events = base.prototype.events;
+			it("should have correct clickhandler entry",function(){
+				expect(events["click .prop"]).toEqual("propClickHandler");
 			});
 		});
 
@@ -63,11 +69,11 @@ describe("The Model functionality", function() {
 				}
 			};
 			var context = {
-				updatePropViews: jasmine.createSpy()
+				propUpdateHandler: {foo:"bar"},
 			};
 			init.call(context,arg);
 			it("should set event listener on the model",function(){
-				expect(arg.model.on).toHaveBeenCalledWith("change",context.updatePropViews,context);
+				expect(arg.model.on).toHaveBeenCalledWith("change",context.propUpdateHandler,context);
 			});
 		});
 
@@ -96,8 +102,8 @@ describe("The Model functionality", function() {
 			});
 		});
 
-		describe("the updatePropViews function",function(){
-			var upd = base.prototype.updatePropViews;
+		describe("the propUpdateHandler function",function(){
+			var upd = base.prototype.propUpdateHandler;
 			var context = {
 				views: {
 					foo: {

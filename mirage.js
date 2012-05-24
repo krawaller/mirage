@@ -245,25 +245,49 @@ this.Mirage = (function(){
 		propviewconstructors: viewconstrpackage,
 		
 		
-		initialize: function(opts){
-			opts.model.on("change",this.updatePropViews,this);
+		events: {
+			"click .prop": "propClickHandler"
 		},
 		
+		// Model view inititialization. Sets change listener.
+		initialize: function(opts){
+			opts.model.on("change",this.propUpdateHandler,this);
+		},
 		
 		// callback for changes in `model`, will update each propertyview
-		updatePropViews: function(props){
+		propUpdateHandler: function(props){
 			for(var prop in props){
 				this.views[prop] && this.views[prop].updateValueElement(props[prop]);
 			}
 		},
+
+		// Called from `initialize` with same arguments. Responsible for setting the clickhandler
+		// that will fire a normalized event when a property view is clicked.
+		propClickHandler: function(e){
+			var key = $(e.target).closest(".prop-multi").attr("key"),
+				name = $(e.target).closest(".prop").attr("prop-name"),
+				opts = this.options,
+				type = opts.propdef.type,
+				o = {
+					propdef: opts.propdef,
+					model: opts.model,
+					key: key,
+					name: name
+				};
+			// TODO: watch html bits. are we really always clicking within key & name?
+			this.trigger("propclick",o);
+			this.trigger("propclick:"+type,o);
+			this.trigger("propclick:"+type+":"+name,o);
+		},
 		
 		// Called from `initialize` with same arguments. Responsible for setting the clickhandler
 		// that will fire a normalized event when a property view is clicked.
-		setPropClickHandler: function(opts){
+		setPropClickHandler: function(e){
 			var me = this;
 			this.$el.on("click",".prop",function(e){
 				var key = $(e.target).closest(".prop-multi").attr("key"),
 					name = $(e.target).closest(".prop").attr("prop-name"),
+					opts = this.options,
 					type = opts.propdef.type,
 					o = {
 						propdef: opts.propdef,
@@ -271,9 +295,9 @@ this.Mirage = (function(){
 						key: key,
 						name: name
 					};
-				me.trigger("propclick",o);
-				me.trigger("propclick:"+type,o);
-				me.trigger("propclick:"+type+":"+name,o);
+				this.trigger("propclick",o);
+				this.trigger("propclick:"+type,o);
+				this.trigger("propclick:"+type+":"+name,o);
 			});
 		},
 		// Loops the property views stored in the `views` context property, and calls `getInputValue`
