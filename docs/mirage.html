@@ -1,24 +1,18 @@
-<!DOCTYPE html>  <html> <head>   <title>mirage.js</title>   <meta http-equiv="content-type" content="text/html; charset=UTF-8">   <link rel="stylesheet" media="all" href="docco.css" /> </head> <body>   <div id="container">     <div id="background"></div>          <table cellpadding="0" cellspacing="0">       <thead>         <tr>           <th class="docs">             <h1>               mirage.js             </h1>           </th>           <th class="code">           </th>         </tr>       </thead>       <tbody>                               <tr id="section-1">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-1">&#182;</a>               </div>                            </td>             <td class="code">               <div class="highlight"><pre><span class="k">this</span><span class="p">.</span><span class="nx">Mirage</span> <span class="o">=</span> <span class="p">(</span><span class="kd">function</span><span class="p">(){</span></pre></div>             </td>           </tr>                               <tr id="section-2">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-2">&#182;</a>               </div>               <h3>Property views</h3>
+<!DOCTYPE html>  <html> <head>   <title>mirage.js</title>   <meta http-equiv="content-type" content="text/html; charset=UTF-8">   <link rel="stylesheet" media="all" href="docco.css" /> </head> <body>   <div id="container">     <div id="background"></div>          <table cellpadding="0" cellspacing="0">       <thead>         <tr>           <th class="docs">             <h1>               mirage.js             </h1>           </th>           <th class="code">           </th>         </tr>       </thead>       <tbody>                               <tr id="section-1">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-1">&#182;</a>               </div>                            </td>             <td class="code">               <div class="highlight"><pre><span class="k">this</span><span class="p">.</span><span class="nx">Mirage</span> <span class="o">=</span> <span class="p">(</span><span class="kd">function</span><span class="p">(){</span></pre></div>             </td>           </tr>                               <tr id="section-2">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-2">&#182;</a>               </div>               <h3>Property functionality</h3>
 
-<p>These views are used to display a single model property. There are 3 different flavours of display:</p>
-
-<ul>
-<li><em>label</em>: will show the name of the property</li>
-<li><em>value</em>: will show the value of the property</li>
-<li><em>edit</em>: will show a control to edit the value of the property</li>
-</ul>
-
-<p>Each property type will have its own view (text,boolean,selectlist,etc), and each such type-specific
-view will be able to render the property in those three flavours.</p>             </td>             <td class="code">               <div class="highlight"><pre></pre></div>             </td>           </tr>                               <tr id="section-3">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-3">&#182;</a>               </div>               <h4>Property base view</h4>
+<p>These views are used to display a single model property. 
+Each property type will have its own view (text,boolean,selectlist,etc). Each such type-specific
+view will be able to render label, value and edit html for that propery.</p>             </td>             <td class="code">               <div class="highlight"><pre></pre></div>             </td>           </tr>                               <tr id="section-3">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-3">&#182;</a>               </div>               <h4>Property base view</h4>
 
 <p>An abstract baseclass, inherited by all Property views</p>             </td>             <td class="code">               <div class="highlight"><pre>	
 	<span class="kd">var</span> <span class="nx">PropertyBaseView</span> <span class="o">=</span> <span class="nx">Backbone</span><span class="p">.</span><span class="nx">View</span><span class="p">.</span><span class="nx">extend</span><span class="p">({</span>
 		
 		<span class="nx">tagName</span><span class="o">:</span> <span class="s2">&quot;span&quot;</span><span class="p">,</span>
-		</pre></div>             </td>           </tr>                               <tr id="section-4">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-4">&#182;</a>               </div>               <p>The initialize function needs a propdef (Property definition) and a kind (one of label,
-value or edit). It will store the propdef on the instance for later access, and build
-the correct element depending on the kind. If a <code>clickEvent</code> was supplied, we bind that
-to the element.</p>             </td>             <td class="code">               <div class="highlight"><pre>		<span class="nx">initialize</span><span class="o">:</span> <span class="kd">function</span><span class="p">(</span><span class="nx">opts</span><span class="p">){</span>
+		</pre></div>             </td>           </tr>                               <tr id="section-4">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-4">&#182;</a>               </div>               <p>The initialize function takes an option object containing:
+* <code>propdef</code>: a property definition object
+* <code>value</code>: the current value of the property (TODO: or?)
+* <code>[editing]</code>: set to true if edit control should be displayed instead of value
+* <code>[labelPosition]</code>: set to "before" or "after" if you want a label rendered</p>             </td>             <td class="code">               <div class="highlight"><pre>		<span class="nx">initialize</span><span class="o">:</span> <span class="kd">function</span><span class="p">(</span><span class="nx">opts</span><span class="p">){</span>
 			<span class="k">this</span><span class="p">.</span><span class="nx">preInit</span> <span class="o">&amp;&amp;</span> <span class="k">this</span><span class="p">.</span><span class="nx">preInit</span><span class="p">(</span><span class="nx">opts</span><span class="p">);</span>
 			<span class="kd">var</span> <span class="nx">o</span> <span class="o">=</span> <span class="nx">opts</span><span class="p">.</span><span class="nx">propdef</span><span class="p">,</span> <span class="nx">click</span> <span class="o">=</span> <span class="nx">o</span><span class="p">.</span><span class="nx">clickEvent</span><span class="p">;</span>
 			<span class="k">this</span><span class="p">.</span><span class="nx">propdef</span> <span class="o">=</span> <span class="nx">o</span><span class="p">;</span>
@@ -28,7 +22,7 @@ to the element.</p>             </td>             <td class="code">             
 and adding relevant attributes and css classes.</p>             </td>             <td class="code">               <div class="highlight"><pre>		<span class="nx">elementWrapper</span><span class="o">:</span> <span class="kd">function</span><span class="p">(</span><span class="nx">o</span><span class="p">){</span>
 			<span class="nx">o</span> <span class="o">=</span> <span class="nx">_</span><span class="p">.</span><span class="nx">defaults</span><span class="p">(</span><span class="nx">o</span><span class="o">||</span><span class="p">{},{</span>
 				<span class="nx">tag</span><span class="o">:</span> <span class="s2">&quot;span&quot;</span><span class="p">,</span>
-				<span class="nx">classes</span><span class="o">:</span> <span class="s2">&quot;prop-&quot;</span><span class="o">+</span><span class="nx">o</span><span class="p">.</span><span class="nx">kind</span><span class="o">+</span><span class="s2">&quot; prop-&quot;</span><span class="o">+</span><span class="nx">o</span><span class="p">.</span><span class="nx">type</span><span class="o">+</span><span class="s2">&quot;-&quot;</span><span class="o">+</span><span class="nx">o</span><span class="p">.</span><span class="nx">kind</span>
+				<span class="nx">classes</span><span class="o">:</span> <span class="s2">&quot;prop prop-&quot;</span><span class="o">+</span><span class="nx">o</span><span class="p">.</span><span class="nx">kind</span><span class="o">+</span><span class="s2">&quot; prop-&quot;</span><span class="o">+</span><span class="nx">o</span><span class="p">.</span><span class="nx">type</span><span class="o">+</span><span class="s2">&quot;-&quot;</span><span class="o">+</span><span class="nx">o</span><span class="p">.</span><span class="nx">kind</span>
 			<span class="p">});</span>
 			<span class="kd">var</span> <span class="nx">$el</span> <span class="o">=</span> <span class="nx">$</span><span class="p">(</span><span class="nx">o</span><span class="p">.</span><span class="nx">content</span><span class="p">);</span>
 			<span class="k">if</span> <span class="p">(</span><span class="nx">o</span><span class="p">.</span><span class="nx">force</span> <span class="o">||</span> <span class="nx">$el</span><span class="p">.</span><span class="nx">length</span> <span class="o">!==</span> <span class="mi">1</span><span class="p">){</span>
@@ -38,6 +32,9 @@ and adding relevant attributes and css classes.</p>             </td>           
 			<span class="k">if</span> <span class="p">(</span><span class="nx">o</span><span class="p">.</span><span class="nx">attributes</span><span class="p">){</span>
 				<span class="nx">$el</span><span class="p">.</span><span class="nx">attr</span><span class="p">(</span><span class="nx">o</span><span class="p">.</span><span class="nx">attributes</span><span class="p">);</span>
 			<span class="p">}</span>
+			<span class="k">if</span> <span class="p">(</span><span class="nx">o</span><span class="p">.</span><span class="nx">name</span><span class="p">){</span>
+				<span class="nx">$el</span><span class="p">.</span><span class="nx">attr</span><span class="p">(</span><span class="s2">&quot;prop-name&quot;</span><span class="p">,</span><span class="nx">o</span><span class="p">.</span><span class="nx">name</span><span class="p">);</span>
+			<span class="p">}</span>
 			<span class="k">if</span> <span class="p">(</span><span class="nx">o</span><span class="p">.</span><span class="nx">classes</span><span class="p">){</span>
 				<span class="nx">$el</span><span class="p">.</span><span class="nx">addClass</span><span class="p">(</span><span class="nx">o</span><span class="p">.</span><span class="nx">classes</span><span class="p">);</span>
 			<span class="p">}</span>
@@ -45,7 +42,7 @@ and adding relevant attributes and css classes.</p>             </td>           
 		<span class="p">},</span>
 		
 		</pre></div>             </td>           </tr>                               <tr id="section-7">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-7">&#182;</a>               </div>               <p>Called from <code>initialize</code>, passing the whole parameter object.
-Will call &lt;viewkind&gt;Html to create content, and pass along to elementWrapper</p>             </td>             <td class="code">               <div class="highlight"><pre>		<span class="nx">buildElement</span><span class="o">:</span> <span class="kd">function</span><span class="p">(</span><span class="nx">o</span><span class="p">){</span>
+Will call <code>&amp;lt;viewkind&amp;gt;Html</code> to create content, and pass along to <code>elementWrapper</code></p>             </td>             <td class="code">               <div class="highlight"><pre>		<span class="nx">buildElement</span><span class="o">:</span> <span class="kd">function</span><span class="p">(</span><span class="nx">o</span><span class="p">){</span>
 			<span class="kd">var</span> <span class="nx">content</span> <span class="o">=</span> <span class="k">this</span><span class="p">[(</span><span class="nx">o</span><span class="p">.</span><span class="nx">editing</span><span class="o">?</span><span class="s2">&quot;edit&quot;</span><span class="o">:</span><span class="s2">&quot;value&quot;</span><span class="p">)</span><span class="o">+</span><span class="s2">&quot;Html&quot;</span><span class="p">](</span><span class="nx">o</span><span class="p">.</span><span class="nx">propdef</span><span class="p">,</span><span class="nx">o</span><span class="p">.</span><span class="nx">value</span><span class="p">);</span>
 			<span class="k">if</span> <span class="p">(</span><span class="nx">o</span><span class="p">.</span><span class="nx">labelPosition</span><span class="p">){</span>
 				<span class="kd">var</span> <span class="nx">lbl</span> <span class="o">=</span> <span class="k">this</span><span class="p">.</span><span class="nx">labelHtml</span><span class="p">(</span><span class="nx">o</span><span class="p">.</span><span class="nx">propdef</span><span class="p">,</span><span class="nx">o</span><span class="p">.</span><span class="nx">value</span><span class="p">);</span>
@@ -60,6 +57,7 @@ Will call &lt;viewkind&gt;Html to create content, and pass along to elementWrapp
 			<span class="p">}</span>
 			<span class="k">return</span> <span class="k">this</span><span class="p">.</span><span class="nx">elementWrapper</span><span class="p">({</span>
 				<span class="nx">content</span><span class="o">:</span> <span class="nx">content</span><span class="p">,</span>
+				<span class="nx">name</span><span class="o">:</span> <span class="nx">o</span><span class="p">.</span><span class="nx">propdef</span><span class="p">.</span><span class="nx">name</span><span class="p">,</span>
 				<span class="nx">force</span><span class="o">:</span> <span class="o">!</span><span class="nx">o</span><span class="p">.</span><span class="nx">editing</span>
 			<span class="p">});</span>
 		<span class="p">},</span>
@@ -145,7 +143,8 @@ is used.</p>             </td>             <td class="code">               <div 
 		<span class="p">}</span>
 	<span class="p">});</span></pre></div>             </td>           </tr>                               <tr id="section-19">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-19">&#182;</a>               </div>               <h4>MultiSelect property view</h4>
 
-<p>Same as select, but allows multiple values. Exact same API.</p>             </td>             <td class="code">               <div class="highlight"><pre>	<span class="kd">var</span> <span class="nx">PropertyMultiSelectView</span> <span class="o">=</span> <span class="nx">PropertyBaseView</span><span class="p">.</span><span class="nx">extend</span><span class="p">({</span>
+<p>Same as select, but allows multiple values. Exact same API.
+Sets a 'key' attribute on the value view, so we can see which was clicked</p>             </td>             <td class="code">               <div class="highlight"><pre>	<span class="kd">var</span> <span class="nx">PropertyMultiSelectView</span> <span class="o">=</span> <span class="nx">PropertyBaseView</span><span class="p">.</span><span class="nx">extend</span><span class="p">({</span>
 		<span class="nx">editHtml</span><span class="o">:</span> <span class="kd">function</span><span class="p">(</span><span class="nx">o</span><span class="p">,</span><span class="nx">val</span><span class="p">){</span>
 			<span class="kd">var</span> <span class="nx">optstr</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="nx">opts</span> <span class="o">=</span> <span class="nx">o</span><span class="p">.</span><span class="nx">options</span><span class="p">,</span> <span class="nx">valprop</span> <span class="o">=</span> <span class="nx">o</span><span class="p">.</span><span class="nx">valueProp</span> <span class="o">||</span> <span class="s2">&quot;val&quot;</span><span class="p">;</span>
 			<span class="k">for</span><span class="p">(</span><span class="kd">var</span> <span class="nx">i</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="nx">l</span><span class="o">=</span><span class="nx">opts</span><span class="p">.</span><span class="nx">length</span><span class="p">;</span><span class="nx">i</span><span class="o">&lt;</span><span class="nx">l</span><span class="p">;</span><span class="nx">i</span><span class="o">++</span><span class="p">){</span>
@@ -168,10 +167,11 @@ is used.</p>             </td>             <td class="code">               <div 
 			<span class="nx">_</span><span class="p">.</span><span class="nx">each</span><span class="p">(</span><span class="nx">sel</span><span class="p">,</span><span class="kd">function</span><span class="p">(</span><span class="nx">opt</span><span class="p">){</span>
 				<span class="nx">ret</span> <span class="o">+=</span> <span class="nx">me</span><span class="p">.</span><span class="nx">elementWrapper</span><span class="p">({</span>
 					<span class="nx">content</span><span class="o">:</span> <span class="nx">o</span><span class="p">.</span><span class="nx">makeValue</span> <span class="o">?</span> <span class="nx">o</span><span class="p">.</span><span class="nx">makeValue</span><span class="p">(</span><span class="nx">opt</span><span class="p">)</span> <span class="o">:</span> <span class="nx">opt</span><span class="p">.</span><span class="nx">text</span><span class="p">,</span>
+					<span class="nx">classes</span><span class="o">:</span> <span class="s2">&quot;prop-multi&quot;</span><span class="p">,</span>
 					<span class="nx">attributes</span><span class="o">:</span> <span class="p">{</span>
 						<span class="nx">key</span><span class="o">:</span> <span class="nx">opt</span><span class="p">[</span><span class="nx">valprop</span><span class="p">]</span>
 					<span class="p">}</span>
-				<span class="p">})[</span><span class="mi">0</span><span class="p">].</span><span class="nx">outerHTML</span><span class="p">;</span> <span class="c1">//&quot;&lt;span key=&#39;&quot;+opt[valprop]+&quot;&#39;&gt;&quot;+(o.makeValue ? o.makeValue(opt) : opt.text)+&quot;&lt;/span&gt;&quot;;</span>
+				<span class="p">})[</span><span class="mi">0</span><span class="p">].</span><span class="nx">outerHTML</span><span class="p">;</span>
 			<span class="p">});</span>
 			<span class="k">return</span> <span class="nx">ret</span><span class="p">;</span>
 		<span class="p">}</span>
@@ -204,7 +204,7 @@ If a <code>modelClick</code> callback is given, a clickhandler will be set on th
 	<span class="kd">var</span> <span class="nx">relationPreInit</span> <span class="o">=</span> <span class="kd">function</span><span class="p">(</span><span class="nx">opts</span><span class="p">){</span>
 		<span class="k">this</span><span class="p">.</span><span class="nx">valueProp</span> <span class="o">=</span> <span class="nx">opts</span><span class="p">.</span><span class="nx">valueProp</span> <span class="o">||</span> <span class="s2">&quot;id&quot;</span><span class="p">;</span>
 		<span class="k">this</span><span class="p">.</span><span class="nx">options</span> <span class="o">=</span> <span class="nx">opts</span><span class="p">.</span><span class="nx">collection</span><span class="p">.</span><span class="nx">models</span><span class="p">;</span>
-	<span class="p">}</span>
+	<span class="p">};</span>
 	</pre></div>             </td>           </tr>                               <tr id="section-22">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-22">&#182;</a>               </div>               <p>The HasOne view, inheriting from SelectView</p>             </td>             <td class="code">               <div class="highlight"><pre>	<span class="kd">var</span> <span class="nx">PropertyHasOneView</span> <span class="o">=</span> <span class="nx">PropertySelectView</span><span class="p">.</span><span class="nx">extend</span><span class="p">({</span>
 		<span class="nx">type</span><span class="o">:</span> <span class="s2">&quot;hasone&quot;</span><span class="p">,</span>
 		<span class="nx">initialize</span><span class="o">:</span> <span class="nx">relationInitialize</span><span class="p">,</span>
@@ -273,16 +273,68 @@ If a <code>modelClick</code> callback is given, a clickhandler will be set on th
 		<span class="p">}</span>
 	<span class="p">});</span>
 	
+	<span class="kd">var</span> <span class="nx">viewconstrpackage</span> <span class="o">=</span> <span class="p">{</span>
+		<span class="nx">base</span><span class="o">:</span> <span class="nx">PropertyBaseView</span><span class="p">,</span>
+		<span class="nx">text</span><span class="o">:</span> <span class="nx">PropertyTextView</span><span class="p">,</span>
+		<span class="nx">bool</span><span class="o">:</span> <span class="nx">PropertyBoolView</span><span class="p">,</span>
+		<span class="nx">select</span><span class="o">:</span> <span class="nx">PropertySelectView</span><span class="p">,</span>
+		<span class="nx">multiselect</span><span class="o">:</span> <span class="nx">PropertyMultiSelectView</span><span class="p">,</span>
+		<span class="nx">hasone</span><span class="o">:</span> <span class="nx">PropertyHasOneView</span><span class="p">,</span>
+		<span class="nx">hasmany</span><span class="o">:</span> <span class="nx">PropertyHasManyView</span>
+	<span class="p">};</span>
+	
+	</pre></div>             </td>           </tr>                               <tr id="section-24">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-24">&#182;</a>               </div>               <h3>Model functionality</h3>             </td>             <td class="code">               <div class="highlight"><pre>	</pre></div>             </td>           </tr>                               <tr id="section-25">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-25">&#182;</a>               </div>               <h4>Model base view</h4>             </td>             <td class="code">               <div class="highlight"><pre>	<span class="kd">var</span> <span class="nx">ModelBaseView</span> <span class="o">=</span> <span class="nx">Backbone</span><span class="p">.</span><span class="nx">View</span><span class="p">.</span><span class="nx">extend</span><span class="p">({</span></pre></div>             </td>           </tr>                               <tr id="section-26">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-26">&#182;</a>               </div>               <p>An object with links to all property view constructors, accessed by type key. Used in 
+<code>buildElemenent</code> function to instantiate individual property views.</p>             </td>             <td class="code">               <div class="highlight"><pre>		<span class="nx">propviewconstructors</span><span class="o">:</span> <span class="nx">viewconstrpackage</span><span class="p">,</span></pre></div>             </td>           </tr>                               <tr id="section-27">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-27">&#182;</a>               </div>               <p>Called from <code>initialize</code> with same arguments. Responsible for setting the clickhandler
+that will fire a normalized event when a property view is clicked.</p>             </td>             <td class="code">               <div class="highlight"><pre>		<span class="nx">setPropClickHandler</span><span class="o">:</span> <span class="kd">function</span><span class="p">(</span><span class="nx">opts</span><span class="p">){</span>
+			<span class="kd">var</span> <span class="nx">me</span> <span class="o">=</span> <span class="k">this</span><span class="p">;</span>
+			<span class="k">this</span><span class="p">.</span><span class="nx">$el</span><span class="p">.</span><span class="nx">on</span><span class="p">(</span><span class="s2">&quot;click&quot;</span><span class="p">,</span><span class="s2">&quot;.prop&quot;</span><span class="p">,</span><span class="kd">function</span><span class="p">(</span><span class="nx">e</span><span class="p">){</span>
+				<span class="kd">var</span> <span class="nx">key</span> <span class="o">=</span> <span class="nx">$</span><span class="p">(</span><span class="nx">e</span><span class="p">.</span><span class="nx">target</span><span class="p">).</span><span class="nx">closest</span><span class="p">(</span><span class="s2">&quot;.prop-multi&quot;</span><span class="p">).</span><span class="nx">attr</span><span class="p">(</span><span class="s2">&quot;key&quot;</span><span class="p">),</span>
+					<span class="nx">name</span> <span class="o">=</span> <span class="nx">$</span><span class="p">(</span><span class="nx">e</span><span class="p">.</span><span class="nx">target</span><span class="p">).</span><span class="nx">closest</span><span class="p">(</span><span class="s2">&quot;.prop&quot;</span><span class="p">).</span><span class="nx">attr</span><span class="p">(</span><span class="s2">&quot;prop-name&quot;</span><span class="p">),</span>
+					<span class="nx">type</span> <span class="o">=</span> <span class="nx">opts</span><span class="p">.</span><span class="nx">propdef</span><span class="p">.</span><span class="nx">type</span><span class="p">,</span>
+					<span class="nx">o</span> <span class="o">=</span> <span class="p">{</span>
+						<span class="nx">propdef</span><span class="o">:</span> <span class="nx">opts</span><span class="p">.</span><span class="nx">propdef</span><span class="p">,</span>
+						<span class="nx">model</span><span class="o">:</span> <span class="nx">opts</span><span class="p">.</span><span class="nx">model</span><span class="p">,</span>
+						<span class="nx">key</span><span class="o">:</span> <span class="nx">key</span><span class="p">,</span>
+						<span class="nx">name</span><span class="o">:</span> <span class="nx">name</span>
+					<span class="p">};</span>
+				<span class="nx">me</span><span class="p">.</span><span class="nx">trigger</span><span class="p">(</span><span class="s2">&quot;propclick&quot;</span><span class="p">,</span><span class="nx">o</span><span class="p">);</span>
+				<span class="nx">me</span><span class="p">.</span><span class="nx">trigger</span><span class="p">(</span><span class="s2">&quot;propclick:&quot;</span><span class="o">+</span><span class="nx">type</span><span class="p">,</span><span class="nx">o</span><span class="p">);</span>
+				<span class="nx">me</span><span class="p">.</span><span class="nx">trigger</span><span class="p">(</span><span class="s2">&quot;propclick:&quot;</span><span class="o">+</span><span class="nx">type</span><span class="o">+</span><span class="s2">&quot;:&quot;</span><span class="o">+</span><span class="nx">name</span><span class="p">,</span><span class="nx">o</span><span class="p">);</span>
+			<span class="p">});</span>
+		<span class="p">},</span></pre></div>             </td>           </tr>                               <tr id="section-28">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-28">&#182;</a>               </div>               <p>Loops the property views stored in the <code>views</code> context property, and calls <code>getInputValue</code>
+for each. Returns an object property names and values. Used to collect all data from a
+model edit form.</p>             </td>             <td class="code">               <div class="highlight"><pre>		<span class="nx">getInputValues</span><span class="o">:</span> <span class="kd">function</span><span class="p">(){</span>
+			<span class="kd">var</span> <span class="nx">ret</span> <span class="o">=</span> <span class="p">{};</span>
+			<span class="k">for</span><span class="p">(</span><span class="kd">var</span> <span class="nx">name</span> <span class="k">in</span> <span class="k">this</span><span class="p">.</span><span class="nx">views</span><span class="p">){</span>
+				<span class="nx">ret</span><span class="p">[</span><span class="nx">name</span><span class="p">]</span> <span class="o">=</span> <span class="k">this</span><span class="p">.</span><span class="nx">views</span><span class="p">[</span><span class="nx">name</span><span class="p">].</span><span class="nx">getInputValue</span><span class="p">();</span>
+			<span class="p">}</span>
+			<span class="k">return</span> <span class="nx">ret</span><span class="p">;</span>
+		<span class="p">},</span>
+		</pre></div>             </td>           </tr>                               <tr id="section-29">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-29">&#182;</a>               </div>               <p>Called from <code>initialize</code>, with same arguments. Will loop the definitions in <code>props</code> option
+and create a view for each, append the result to the element, and also store the views in
+a <code>views</code> property on the context for later access.</p>             </td>             <td class="code">               <div class="highlight"><pre>		<span class="nx">buildElement</span><span class="o">:</span> <span class="kd">function</span><span class="p">(</span><span class="nx">opts</span><span class="p">){</span>
+			<span class="kd">var</span> <span class="nx">$el</span> <span class="o">=</span> <span class="nx">$</span><span class="p">(</span><span class="s2">&quot;&lt;div&gt;&quot;</span><span class="p">).</span><span class="nx">addClass</span><span class="p">(</span><span class="s2">&quot;model model-&quot;</span><span class="o">+</span><span class="nx">opts</span><span class="p">.</span><span class="nx">type</span><span class="p">);</span>
+			<span class="kd">var</span> <span class="nx">props</span> <span class="o">=</span> <span class="nx">opts</span><span class="p">.</span><span class="nx">props</span><span class="p">;</span>
+			<span class="k">this</span><span class="p">.</span><span class="nx">views</span> <span class="o">=</span> <span class="p">{};</span>
+			<span class="k">for</span><span class="p">(</span><span class="kd">var</span> <span class="nx">key</span> <span class="k">in</span> <span class="nx">props</span><span class="p">){</span>
+				<span class="kd">var</span> <span class="nx">prop</span> <span class="o">=</span> <span class="nx">props</span><span class="p">[</span><span class="nx">key</span><span class="p">];</span>
+				<span class="kd">var</span> <span class="nx">view</span> <span class="o">=</span> <span class="k">new</span> <span class="k">this</span><span class="p">.</span><span class="nx">propviewconstructors</span><span class="p">[</span><span class="nx">prop</span><span class="p">.</span><span class="nx">type</span><span class="p">]({</span>
+					<span class="nx">propdef</span><span class="o">:</span> <span class="nx">prop</span><span class="p">,</span>
+					<span class="nx">value</span><span class="o">:</span> <span class="nx">opts</span><span class="p">.</span><span class="nx">model</span><span class="p">.</span><span class="nx">attributes</span><span class="p">[</span><span class="nx">prop</span><span class="p">.</span><span class="nx">name</span><span class="p">],</span>
+					<span class="nx">editing</span><span class="o">:</span> <span class="nx">opts</span><span class="p">.</span><span class="nx">editing</span><span class="p">,</span>
+					<span class="nx">labelPosition</span><span class="o">:</span> <span class="nx">opts</span><span class="p">.</span><span class="nx">labelPosition</span>
+				<span class="p">});</span>
+				<span class="k">this</span><span class="p">.</span><span class="nx">views</span><span class="p">[</span><span class="nx">prop</span><span class="p">.</span><span class="nx">name</span><span class="p">]</span> <span class="o">=</span> <span class="nx">view</span><span class="p">;</span>
+				<span class="nx">$el</span><span class="p">.</span><span class="nx">append</span><span class="p">(</span><span class="nx">view</span><span class="p">.</span><span class="nx">$el</span><span class="p">);</span>
+			<span class="p">}</span>
+			<span class="k">return</span> <span class="nx">$el</span><span class="p">;</span>
+		<span class="p">}</span>
+	<span class="p">});</span>
 	
 	<span class="k">return</span> <span class="p">{</span>
-		<span class="nx">Property</span><span class="o">:</span> <span class="p">{</span>
-			<span class="nx">BaseView</span><span class="o">:</span> <span class="nx">PropertyBaseView</span><span class="p">,</span>
-			<span class="nx">TextView</span><span class="o">:</span> <span class="nx">PropertyTextView</span><span class="p">,</span>
-			<span class="nx">BoolView</span><span class="o">:</span> <span class="nx">PropertyBoolView</span><span class="p">,</span>
-			<span class="nx">SelectView</span><span class="o">:</span> <span class="nx">PropertySelectView</span><span class="p">,</span>
-			<span class="nx">MultiSelectView</span><span class="o">:</span> <span class="nx">PropertyMultiSelectView</span><span class="p">,</span>
-			<span class="nx">HasOneView</span><span class="o">:</span> <span class="nx">PropertyHasOneView</span><span class="p">,</span>
-			<span class="nx">HasManyView</span><span class="o">:</span> <span class="nx">PropertyHasManyView</span>
+		<span class="nx">Property</span><span class="o">:</span> <span class="nx">viewconstrpackage</span><span class="p">,</span>
+		<span class="nx">Model</span><span class="o">:</span> <span class="p">{</span>
+			<span class="nx">Base</span><span class="o">:</span> <span class="nx">ModelBaseView</span>
 		<span class="p">}</span>
 	<span class="p">};</span>
 <span class="p">}());</span>

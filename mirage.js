@@ -213,29 +213,6 @@ this.Mirage = (function(){
 	// Inherits from select/multiselect. Needs a `collection`, will use that as options.
 	// If a `modelClick` callback is given, a clickhandler will be set on the value element.
 	
-	// Initialization function used in both hasone and hasmany.
-	var relationInitialize = function(opts){
-		var p = opts.propdef;
-		opts.propdef = _.defaults({
-			options: p.collection.models,
-			type: this.type,
-			valueProp: "id" || p.valueProp,
-			makeValue: function(model){
-				var str = p.makeValue ? p.makeValue(model) : model.attributes.text;
-			}
-		},p);
-		if (p.modelClick){
-			opts.propdef.clickEvent = {
-				selector: ".prop-model",
-				callback: function(e){
-					var id = $(e.target).attr("key");
-					p.modelClick(p.collection.get(id)||p.collection.getByCid(id));
-				}
-			};
-		}
-		this.constructor.__super__.initialize.call(this,opts);
-	};
-	
 	var relationPreInit = function(opts){
 		this.valueProp = opts.valueProp || "id";
 		this.options = opts.collection.models;
@@ -244,14 +221,12 @@ this.Mirage = (function(){
 	// The HasOne view, inheriting from SelectView
 	var PropertyHasOneView = PropertySelectView.extend({
 		type: "hasone",
-		initialize: relationInitialize,
 		preInit: relationPreInit
 	});
 	
 	// The HasMany view, inheriting from MultiSelectView
 	var PropertyHasManyView = PropertyMultiSelectView.extend({
 		type: "hasmany",
-		initialize: relationInitialize,
 		preInit: relationPreInit
 	});
 
@@ -360,19 +335,29 @@ callback: for edit mode,
 			return ret;
 		},
 		
-		// Called from `initialize`, with same arguments. Will loop the definitions in `props` option
-		// and create a view for each, append the result to the element, and also store the views in
-		// a `views` property on the context for later access.
+		// Called from `initialize`, with same arguments. Will look at the `render` instruction, and
+		// create a view for each property listed there, using the definition found in `props` option.
+		// All used views are stored in a `views` property on the context for later access.
+		// If no `render` instruction is provided, all properties are shown, with labels.
 		buildElement: function(opts){
 			var $el = $("<div>").addClass("model model-"+opts.type);
-			var props = opts.props;
+			if (!opts.render){
+				opts.render = {
+					props: _.keys(opts.props),
+					showlabel: true
+				}
+			}
+			var props = opts.props,
+				torender = opts.render.props;
 			this.views = {};
-			for(var key in props){
+			for(var i = 0, l=torender.length; i<l; i++){
+				var key = torender[i];
 				var prop = props[key];
 				var view = new this.propviewconstructors[prop.type]({
 					propdef: prop,
 					value: opts.model.attributes[prop.name],
-					editing: opts.editing
+					editing: opts.editing,
+					showlabel: opts.render.showlabel
 				});
 				this.views[prop.name] = view;
 				$el.append(view.$el);
