@@ -110,7 +110,7 @@ describe("the Property functionality", function() {
 
 		describe("the buildElement function", function() {
 			var build = PropBaseView.prototype.buildElement;
-			describe("when not editing", function() {
+			describe("when not editing and not showing label", function() {
 				var context, valspy, wrapspy, result, arg;
 				valspy = jasmine.createSpy("valueHtml");
 				wrapspy = jasmine.createSpy("elementWrapper");
@@ -154,11 +154,16 @@ describe("the Property functionality", function() {
 			describe("when editing", function() {
 				var context, html, wrapspy, result, arg;
 				htmlspy = jasmine.createSpy("editHtml");
+				labelspy = jasmine.createSpy("labelHtml");
 				wrapspy = jasmine.createSpy("elementWrapper");
 				context = {
 					editHtml: function(propdef, val) {
 						htmlspy(propdef, val);
 						return "boo";
+					},
+					labelHtml: function(propdef, val) {
+						labelspy(propdef, val);
+						return "label";
 					},
 					elementWrapper: function(o) {
 						wrapspy(o);
@@ -168,16 +173,22 @@ describe("the Property functionality", function() {
 				};
 				arg = {
 					value: "bar",
-					propdef: "foo",
+					propdef: {
+						name: "foo"
+					},
 					editing: true
 				};
 				result = build.call(context, arg);
 				it("should call editHtml with propdef and value", function() {
 					expect(htmlspy).toHaveBeenCalledWith(arg.propdef, arg.value);
 				});
+				it("should call labelHtml too with propdef and value", function() {
+					expect(labelspy).toHaveBeenCalledWith(arg.propdef, arg.value);
+				});
 				it("should elementwrapper with correct args ", function() {
 					expect(wrapspy).toHaveBeenCalledWith({
-						content: "boo",
+						content: "<label for='foo'>label</label>boo",
+						name: "foo",
 						force: false
 					});
 				});
@@ -185,7 +196,7 @@ describe("the Property functionality", function() {
 					expect(context.valueHtml).not.toHaveBeenCalled();
 				});
 			});
-			describe("when labelposition is before", function() {
+			describe("when showlabel is true", function() {
 				var context, valspy, wrapspy, labelspy, result, arg;
 				valspy = jasmine.createSpy("valueHtml");
 				labelspy = jasmine.createSpy("labelHtml");
@@ -207,13 +218,13 @@ describe("the Property functionality", function() {
 				arg = {
 					value: "bar",
 					propdef: "foo",
-					labelPosition: "before"
+					showlabel: true
 				};
 				result = build.call(context, arg);
 				it("should call valueHtml as usual with propdef and value", function() {
 					expect(valspy).toHaveBeenCalledWith(arg.propdef, arg.value);
 				});
-				it("should call labelHtml too with propdef and value", function() {
+				it("should call labelHtml", function() {
 					expect(labelspy).toHaveBeenCalledWith(arg.propdef, arg.value);
 				});
 				it("should call elementwrapper with content having label first", function() {
@@ -221,74 +232,6 @@ describe("the Property functionality", function() {
 						content: "labelbin",
 						force: true
 					});
-				});
-			});
-			describe("when labelposition is after", function() {
-				var context, valspy, wrapspy, labelspy, result, arg;
-				valspy = jasmine.createSpy("valueHtml");
-				labelspy = jasmine.createSpy("labelHtml");
-				wrapspy = jasmine.createSpy("elementWrapper");
-				context = {
-					valueHtml: function(propdef, val) {
-						valspy(propdef, val);
-						return "bin";
-					},
-					labelHtml: function(propdef, val) {
-						labelspy(propdef, val);
-						return "label";
-					},
-					elementWrapper: function(o) {
-						wrapspy(o);
-						return "baz";
-					}
-				};
-				arg = {
-					value: "bar",
-					propdef: "foo",
-					labelPosition: "after"
-				};
-				result = build.call(context, arg);
-				it("should call valueHtml as usual with propdef and value", function() {
-					expect(valspy).toHaveBeenCalledWith(arg.propdef, arg.value);
-				});
-				it("should call labelHtml too with propdef and value", function() {
-					expect(labelspy).toHaveBeenCalledWith(arg.propdef, arg.value);
-				});
-				it("should call elementwrapper with content having label second", function() {
-					expect(wrapspy).toHaveBeenCalledWith({
-						content: "binlabel",
-						force: true
-					});
-				});
-			});
-			describe("when editing and we have label", function() {
-				var context, valspy, wrapspy, labelspy, result, arg;
-				valspy = jasmine.createSpy("valueHtml");
-				labelspy = jasmine.createSpy("labelHtml");
-				wrapspy = jasmine.createSpy("elementWrapper");
-				context = {
-					editHtml: function(propdef, val) {
-						return "bin";
-					},
-					labelHtml: function(propdef, val) {
-						return "label";
-					},
-					elementWrapper: function(o) {
-						wrapspy(o);
-						return $("<p>" + o.content + "</p>");
-					}
-				};
-				arg = {
-					value: "bar",
-					editing: true,
-					propdef: {
-						name: "NAME"
-					},
-					labelPosition: "before"
-				};
-				result = build.call(context, arg);
-				it("should use the correct html", function() {
-					expect(result).toHaveHtml("<label for='NAME'>label</label>bin");
 				});
 			});
 		});

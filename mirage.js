@@ -55,16 +55,12 @@ this.Mirage = (function(){
 		// Will call `&lt;viewkind&gt;Html` to create content, and pass along to `elementWrapper`
 		buildElement: function(o){
 			var content = this[(o.editing?"edit":"value")+"Html"](o.propdef,o.value);
-			if (o.labelPosition){
+			if (o.showlabel || o.editing){
 				var lbl = this.labelHtml(o.propdef,o.value);
 				if (o.editing){
 					lbl = "<label for='"+o.propdef.name+"'>"+lbl+"</label>";
 				}
-				if (o.labelPosition === "before"){
-					content = lbl + content;
-				} else if (o.labelPosition === "after"){
-					content = content + lbl;
-				}
+				content = lbl + content;
 			}
 			return this.elementWrapper({
 				content: content,
