@@ -3,9 +3,18 @@
   <title>Mirage testing</title>
 </head>
 <body>
+	<pre id="code"></pre>
 	<div id="wrapper"></div><div id="edit"></div>
 
 <style type="text/css">
+.model {
+	cursor: pointer;
+}
+
+.model .model-edit {
+	cursor: inherit;
+}
+
 .prop-label {
 	color: #BBB;
 	font-size: 0.8em;
@@ -18,6 +27,13 @@
 .prop-label:after {
 	content: ":";
 }
+
+#code {
+	background-color: #EEE;
+	width: 700px;
+	min-height: 500px;
+	float: right;
+}
 </style>
 
 <script type="text/javascript" src="../libs/underscore-min.js"></script>
@@ -25,7 +41,9 @@
 <script type="text/javascript" src="../libs/backbone-min.js"></script>
 <script type="text/javascript" src="../mirage.js"></script>
 
-<script>
+<script type="text/javascript" id="demoscript">
+
+	// Definition of the properties, used by Mirage to generate views
 	var props = {
 		name: {},
 		age: {
@@ -36,7 +54,16 @@
 			label: "Totally moronic"
 		}
 	};
-	var people = new Backbone.Collection([{name:"fred",age:22},{name:"stooge",age:45,stupid:true},{name:"foo",age:91}]);
+	
+	// A collection of people to use for the demonstration
+	var people = new Backbone.Collection([
+		{name:"fred",age:22},
+		{name:"stooge",age:45,stupid:true},
+		{name:"foo",age:91}
+	]);
+	
+	// A Mirage collection view, will use props def and render instruction to generate
+	// individual model views
 	var peopleView = new Mirage.Collection.base({
 		collection: people,
 		type: "people",
@@ -46,7 +73,10 @@
 			showlabel: false
 		}
 	});
+	
+	// A click on a model in a Mirage collection view will trigger a normalized event
 	peopleView.on("modelclick",function(o){
+		// Now we clone a Mirage model view, setting the edit flag to true
 		var editView = new Mirage.Model.base({
 			model: o.model,
 			type: "people",
@@ -54,12 +84,15 @@
 			props: props
 		});
 		$("#edit").empty().append(editView.$el);
+		// Upon submission, the Mirage model view will trigger a 'submit' event
 		editView.on("submit",function(data){
 			o.model.set(data);
 			$("#edit").empty()
 		});
 	});
-	$("#wrapper").append(peopleView.$el);
 	
+	$("#wrapper").append(peopleView.$el);
+	$("#code").text($("#demoscript").text());
 </script>
+
 </body>

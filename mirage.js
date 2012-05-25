@@ -113,10 +113,13 @@ this.Mirage = (function(){
 	// simple checkbox is shown.
 	var PropertyBoolView = PropertyBaseView.extend({
 		editHtml: function(o,val){
-			return "<input name='"+o.name+"' type='checkbox' class='prop-edit-ctrl' value='"+o.name+"' "+(val?"checked='checked'":"")+"></input>";
+			return "<input name='"+o.name+"' type='checkbox' class='prop-edit-ctrl' "+(val?"checked='checked'":"")+"></input>";
 		},
 		valueHtml: function(o,val){
 			return "<span class='prop-bool-"+(val?'true':'false')+"'>"+(val ? o.trueText || "yes" : o.falseText || "no")+"</span>";
+		},
+		getInputValue: function(){
+			return this.$(".prop-edit-ctrl").attr("checked");
 		}
 	});
 	

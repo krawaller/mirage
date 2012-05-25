@@ -424,7 +424,6 @@ describe("the Property functionality", function() {
 				expect(label).toHaveAttr("type", "checkbox");
 				expect(label).toHaveAttr("name", "foo");
 				expect(label).toHaveAttr("checked", "checked");
-				expect(label).toHaveValue("foo");
 				expect(label).toHaveClass("prop-edit-ctrl");
 			});
 			it("doesnt have checked attr if val is false", function() {
@@ -433,6 +432,10 @@ describe("the Property functionality", function() {
 				},false));
 				expect(label).not.toHaveAttr("checked", "checked");
 			});
+		});
+		describe("the getInputValueFunction", function(){
+			var get = PropertyBoolView.prototype.getInputValue;
+			// TODO - test!
 		});
 		describe("the value element maker", function() {
 			var mkr = PropertyBoolView.prototype.valueHtml;
