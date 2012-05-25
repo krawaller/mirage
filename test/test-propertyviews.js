@@ -35,6 +35,7 @@ describe("the Property functionality", function() {
 				expect(context.preInit).toHaveBeenCalledWith(arg);
 			});
 		});
+		/*
 		describe("the elementWrapper function", function() {
 			var wrapper = PropBaseView.prototype.elementWrapper;
 			it("should return jQuery object, wrapped and processed with defaults", function() {
@@ -106,7 +107,9 @@ describe("the Property functionality", function() {
 				expect($el).not.toHaveClass("prop-value");
 			});
 		});
+		*/
 
+		/*
 		describe("the buildElement function", function() {
 			var build = PropBaseView.prototype.buildElement;
 			describe("when not editing and not showing label", function() {
@@ -234,6 +237,7 @@ describe("the Property functionality", function() {
 				});
 			});
 		});
+		*/
 
 		describe("the updateValueElement function", function() {
 			var findspy = jasmine.createSpy(), htmlspy = jasmine.createSpy(),
@@ -320,6 +324,36 @@ describe("the Property functionality", function() {
 
 	});
 
+	describe("the PropertyIntegerView",function(){
+		var intview = Mirage.Property.integer;
+		it("should inherit from PropTextView", function() {
+			expect(intview.__super__).toBe(Mirage.Property.text.prototype);
+		});
+		describe("the getInputValue function",function(){
+			var flag1, flag2;
+			var result = intview.prototype.getInputValue.call({
+				$: function(arg) {
+					flag1 = arg;
+					return {
+						val: function() {
+							flag2 = true;
+							return "42";
+						}
+					};
+				}
+			});
+			it("selects elements with correct class", function() {
+				expect(flag1).toEqual(".prop-edit-ctrl");
+			});
+			it("calls val() on the resulting jQuery set", function() {
+				expect(flag2).toBeTrue;
+			});
+			it("should parse the string to an integer",function(){
+				expect(result).toEqual(42);
+			});
+		});
+	});
+
 	describe("the PropertyTextView", function() {
 		var PropertyTextView = Mirage.Property.text;
 		it("is defined", function() {
@@ -383,8 +417,8 @@ describe("the Property functionality", function() {
 			it("returns the correct value", function() {
 				var label = $(mkr({
 					name: "foo",
-					val: true
-				}));
+					val: false
+				},true));
 				expect(label).toBeA($);
 				expect(label).toBe("input");
 				expect(label).toHaveAttr("type", "checkbox");
@@ -395,9 +429,8 @@ describe("the Property functionality", function() {
 			});
 			it("doesnt have checked attr if val is false", function() {
 				var label = $(mkr({
-					name: "foo",
-					val: false
-				}));
+					name: "foo"
+				},false));
 				expect(label).not.toHaveAttr("checked", "checked");
 			});
 		});

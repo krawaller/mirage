@@ -27,16 +27,16 @@
 
 <script>
 	var props = {
-		name: {
-			name: "name",
-			type: "text"
-		},
+		name: {},
 		age: {
-			name: "age",
-			type: "text"
+			type: "integer"
+		},
+		stupid: {
+			type: "bool",
+			label: "Totally moronic"
 		}
 	};
-	var people = new Backbone.Collection([{name:"fred",age:22},{name:"stooge",age:45},{name:"foo",age:91}]);
+	var people = new Backbone.Collection([{name:"fred",age:22},{name:"stooge",age:45,stupid:true},{name:"foo",age:91}]);
 	var peopleView = new Mirage.Collection.base({
 		collection: people,
 		type: "people",
@@ -54,10 +54,10 @@
 			props: props
 		});
 		$("#edit").empty().append(editView.$el);
-		$("<input type='button' value='woo'>").click(function(){
-			o.model.set(editView.getInputValues());
-			$("#edit").empty();
-		}).appendTo($("#edit"));
+		editView.on("submit",function(data){
+			o.model.set(data);
+			$("#edit").empty()
+		});
 	});
 	$("#wrapper").append(peopleView.$el);
 	

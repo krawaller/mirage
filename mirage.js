@@ -10,11 +10,9 @@ this.Mirage = (function(){
 	
 	var PropertyBaseView = Backbone.View.extend({
 		
-		tagName: "span",
-		
 		// The initialize function takes an option object containing:
 		// * `propdef`: a property definition object
-		// * `value`: the current value of the property (TODO: or?)
+		// * `value`: the current value of the property
 		// * `[editing]`: set to true if edit control should be displayed instead of value
 		// * `[showlabel]`: boolean. Label is always drawn if `editing` is true.
 		initialize: function(opts){
@@ -25,54 +23,32 @@ this.Mirage = (function(){
 			this.setElement(this.buildElement(opts));
 		},
 		
-		// Used in `buildElement`. Responsible for wrapping content in tag (if needed),
-		// and adding relevant attributes and css classes.
-		elementWrapper: function(o){
-			o = _.defaults(o||{},{
-				tag: "span",
-				classes: "prop prop-"+o.type+" prop-"+o.type+"-"+o.name
-			});
-			var $el = $(o.content);
-			if (o.force || $el.length !== 1){
-				var tag = o.tag || "span";
-				$el = $("<"+tag+">"+o.content+"</"+tag+">");
-			}
-			if (o.attributes){
-				$el.attr(o.attributes);
-			}
-			if (o.name){
-				$el.attr("prop-name",o.name);
-			}
-			if (o.classes){
-				$el.addClass(o.classes);
+		// Called from `initialize`, passing the whole parameter object.
+		// Will call `&lt;viewkind&gt;Html` to create content, and pass along to `elementWrapper`
+		buildElement: function(o){
+			var propdef = o.propdef,
+				type = propdef.type,
+				name = propdef.name,
+				value = o.value;
+			var $el = $("<span>")
+				.append(this.buildPart(propdef,value,o.editing?"edit":"value"))
+				.addClass("prop prop-"+type+" prop-"+type+"-"+name)
+				.attr("prop-name",name);
+			if (o.showlabel || o.editing){
+				$el.prepend(this.buildPart(propdef,value,"label"));
 			}
 			return $el;
 		},
 		
 		
-		// Called from `initialize`, passing the whole parameter object.
-		// Will call `&lt;viewkind&gt;Html` to create content, and pass along to `elementWrapper`
-		buildElement: function(o){
-			var type = o.propdef.type, name = o.propdef.name, kind = (o.editing?"edit":"value"),
-				content = "<span>"+this[kind+"Html"](o.propdef,o.value)+"</span>";
-			content = this.elementWrapper({
-				content: content,
-				classes: "prop-"+kind+" prop-"+type+"-"+kind+" prop-"+type+"-"+name+"-"+kind
-			}).get(0);
-			var $el = $("<span>").addClass("prop prop-"+type+" prop-"+type+"-"+name),
-				main = $(content).addClass("prop-"+kind+" prop-"+type+"-"+kind+" prop-"+type+"-"+name+"-"+kind);
-			$el.append(main);
-			if(o.showlabel || o.editing){
-				var labelhtml = this.labelHtml(o.propdef,o.value);
-				if (o.editing){
-					labelhtml = "<label for='"+name+"'>"+labelhtml+"</label>";
-				}
-				lbl = $("<span>").html(labelhtml)
-					.addClass("prop-label prop-"+type+"-label prop-"+type+"-"+name+"-label");
-				$el.prepend(lbl);
+		buildPart: function(propdef,val,kind){
+			var name = propdef.name,
+				html = this[kind+"Html"](propdef,val),
+				type = propdef.type;
+			if (kind==="edit"){
+				html = "<label for='"+name+"'>"+html+"</label>";
 			}
-			$el.attr("prop-name",name);
-			return $el;
+			return $("<span>").html(html).addClass("prop-"+kind+" prop-"+type+"-"+kind+" prop-"+type+"-"+name+"-"+kind);
 		},
 		
 		// Called from the parent model view.
@@ -123,12 +99,21 @@ this.Mirage = (function(){
 		}
 	});
 	
+	// #### Integer property view
+	// Same as text view, except routes the content through `parseInt` when collecting value
+	// from edit control.
+	var PropertyIntegerView = PropertyTextView.extend({
+		getInputValue: function(){
+			return parseInt(this.$(".prop-edit-ctrl").val());
+		}
+	});
+	
 	// #### Boolean property view
 	// For *value*, will render `trueText`/`falseText` from `propdef` (or default yes/no). For *edit* a
 	// simple checkbox is shown.
 	var PropertyBoolView = PropertyBaseView.extend({
-		editHtml: function(o){
-			return "<input name='"+o.name+"' type='checkbox' class='prop-edit-ctrl' value='"+o.name+"' "+(o.val?"checked='checked'":"")+"></input>";
+		editHtml: function(o,val){
+			return "<input name='"+o.name+"' type='checkbox' class='prop-edit-ctrl' value='"+o.name+"' "+(val?"checked='checked'":"")+"></input>";
 		},
 		valueHtml: function(o,val){
 			return "<span class='prop-bool-"+(val?'true':'false')+"'>"+(val ? o.trueText || "yes" : o.falseText || "no")+"</span>";
@@ -234,6 +219,7 @@ this.Mirage = (function(){
 	var viewconstrpackage = {
 		base: PropertyBaseView,
 		text: PropertyTextView,
+		integer: PropertyIntegerView,
 		bool: PropertyBoolView,
 		select: PropertySelectView,
 		multiselect: PropertyMultiSelectView,
@@ -248,7 +234,8 @@ this.Mirage = (function(){
 	var ModelBaseView = Backbone.View.extend({
 		
 		events: {
-			"click .prop": "propClickHandler"
+			"click .prop": "propClickHandler",
+			"click .model-submit": "modelSubmitHandler" // TODO - test existence?
 		},
 		
 		render: function(){return this;},
@@ -298,6 +285,16 @@ this.Mirage = (function(){
 			return ret;
 		},
 		
+		// Clickhandler for the edit form submit button (TODO: test)
+		modelSubmitHandler: function(){
+			this.trigger("submit",this.getInputValues());
+		},
+		
+		// Called from `buildElement` when editing flag is true (TODO: unittest)
+		buildFormSubmitButton: function(opts){
+			return $("<input type='button' class='model-submit' value='"+(opts.submitText || "save")+"'>");
+		},
+		
 		// Called from `initialize`, with same arguments. Will look at the `render` instruction, and
 		// create a view for each property listed there, using the definition found in `props` option.
 		// The views will be supplied with the current value for the property, collected from `model`.
@@ -316,7 +313,7 @@ this.Mirage = (function(){
 			this.views = {};
 			for(var i = 0, l=torender.length; i<l; i++){
 				var key = torender[i];
-				var prop = props[key];
+				var prop = _.defaults(props[key],{name:key,type:"text"});
 				var view = new this.propviewconstructors[prop.type]({
 					propdef: prop,
 					value: opts.model.attributes[prop.name],
@@ -325,6 +322,9 @@ this.Mirage = (function(){
 				});
 				this.views[prop.name] = view;
 				$el.append(view.$el);
+			}
+			if (opts.editing){
+				$el.append(this.buildFormSubmitButton(opts));
 			}
 			return $el;
 		}

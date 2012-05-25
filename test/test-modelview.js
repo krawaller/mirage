@@ -133,13 +133,16 @@ describe("The Model functionality", function() {
 				}
 			};
 			upd.call(context,{
-				foo: "newfoo",
-				bar: "newbar",
-				baz: "newbaz"
+				attributes: {
+					foo: "newfoo",
+					bar: "newbar",
+					baz: "newbaz"
+				},
+				hasChanged: function(name){return name === "foo";}
 			});
 			it("should call updatePropView for the relevant views",function(){
 				expect(context.views.foo.updateValueElement).toHaveBeenCalledWith("newfoo");
-				expect(context.views.bar.updateValueElement).toHaveBeenCalledWith("newbar");
+				expect(context.views.bar.updateValueElement).not.toHaveBeenCalledWith("newbar");
 			});
 		});
 
@@ -148,6 +151,7 @@ describe("The Model functionality", function() {
 			var Fakeview = function(o) {
 				return {
 					whoami: o.propdef.name,
+					mytype: o.propdef.type,
 					$el: $("<span>").attr({
 						type: o.propdef.type,
 						name: o.propdef.name,
@@ -161,7 +165,11 @@ describe("The Model functionality", function() {
 				propviewconstructors: {
 					fooprop: Fakeview,
 					barprop: Fakeview,
-					binprop: Fakeview
+					binprop: Fakeview,
+					text: Fakeview
+				},
+				buildFormSubmitButton: function(opts){
+					return "SAVE"+opts.name;
 				}
 			};
 			var props = {
@@ -249,6 +257,34 @@ describe("The Model functionality", function() {
 				});
 				it("should show labels",function(){
 					expect($res.children().eq(0)).toHaveAttr("showlabel", "true");
+				});
+			});
+			describe("when no names in individual props",function(){
+				var context = _.clone(basecontext);
+				var arg = {
+					props: {
+						foo: {
+							type: "fooprop",
+						}
+					},
+					model: model
+				};
+				var $res = build.call(context,arg);
+				it("should use the propkey as name",function(){
+					expect(context.views.foo.whoami).toEqual("foo");
+				});
+			});
+			describe("when no type in individual props",function(){
+				var context = _.clone(basecontext);
+				var arg = {
+					props: {
+						foo: {}
+					},
+					model: model
+				};
+				var $res = build.call(context,arg);
+				it("should use text as default type",function(){
+					expect(context.views.foo.mytype).toEqual("text");
 				});
 			});
 		});
