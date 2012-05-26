@@ -16,7 +16,9 @@ this.Mirage = (function(){
 		// * `[editing]`: set to true if edit control should be displayed instead of value
 		// * `[showlabel]`: boolean. Label is always drawn if `editing` is true.
 		initialize: function(opts){
-			this.preInit && this.preInit(opts);
+			if (this.preInit){
+				opts = this.preInit(opts);
+			}
 			var o = opts.propdef, click = o.clickEvent;
 			this.propdef = o;
 			this.value = opts.value;
@@ -34,6 +36,9 @@ this.Mirage = (function(){
 				.append(this.buildPart(propdef,value,o.editing?"edit":"value"))
 				.addClass("prop prop-"+type+" prop-"+type+"-"+name)
 				.attr("prop-name",name);
+			if (o.editing){
+				$el.addClass("prop-editing prop-"+type+"-editing prop-"+type+"-"+name+"-editing");
+			}
 			if (o.showlabel || o.editing){
 				$el.prepend(this.buildPart(propdef,value,"label"));
 			}
@@ -104,7 +109,7 @@ this.Mirage = (function(){
 	// from edit control.
 	var PropertyIntegerView = PropertyTextView.extend({
 		getInputValue: function(){
-			return parseInt(this.$(".prop-edit-ctrl").val());
+			return parseInt(this.$(".prop-edit-ctrl").val(),10);
 		}
 	});
 	
@@ -128,6 +133,16 @@ this.Mirage = (function(){
 	// `options` array in the `propdef`. You can also specify the `valueProp` to be used, defaulting to *val*.
 	var PropertySelectView = PropertyBaseView.extend({
 		
+		// if options is just array of strings, expand that to objects with val prop
+		preInit: function(opts){
+			var options = opts.propdef.options, processed = [];
+			for(var i=0, l=options.length;i<l;i++){
+				var o = options[i];
+				processed.push(typeof o === "string" ? {text:o,val:i} : o);
+			}
+			opts.propdef.options = processed;
+			return opts;
+		},
 		// For *edit*, a select control is shown. If a `makeSelectOption` is supplied in the `propdef`,
 		// that will be used to generate text for the dropdown. Otherwise the option's `text` property
 		// is used.
@@ -136,7 +151,7 @@ this.Mirage = (function(){
 			for(var i=0,l=opts.length;i<l;i++){
 				var opt = opts[i],
 					str = o.makeSelectOption ? o.makeSelectOption(opt) : opt.text;
-				optstr += "<option value='"+opt[valprop]+"'"+(opt[valprop]===val?" selected='selected'":"")+">"+str+"</option>";
+				optstr += "<option value='"+opt[valprop]+"'"+(opt[valprop]==val?" selected='selected'":"")+">"+str+"</option>";
 			}
 			return "<select class='prop-edit-ctrl' name='"+o.name+"'>"+optstr+"</select>";
 		},
@@ -207,8 +222,9 @@ this.Mirage = (function(){
 	var PropertyHasOneView = PropertySelectView.extend({
 		type: "hasone",
 		preInit: function(opts){
-			this.valueProp = opts.valueProp || "id";
-			this.options = opts.collection.models;
+			opts.valueProp = opts.valueProp || "id";
+			opts.options = opts.collection.models;
+			return opts;
 		}
 	});
 	
@@ -387,6 +403,7 @@ this.Mirage = (function(){
 		
 		// Set from `initialize` as clickhandler. Will fire normalized events on the collection
 		// when user clicks on an individual model view.
+		// TODO - maybe just fire the model straight off?
 		modelClickHandler: function(e){
 			var cid = $(e.target).closest(".model").attr("cid"),
 				data = {

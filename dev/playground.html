@@ -16,7 +16,7 @@
 }
 
 .prop-label {
-	color: #BBB;
+	color: blue;
 	font-size: 0.8em;
 	margin-right: 0.5em;
 }
@@ -26,6 +26,14 @@
 
 .prop-label:after {
 	content: ":";
+}
+
+.prop-editing {
+	display: block;
+}
+
+#edit {
+	background-color: #AAA;
 }
 
 #code {
@@ -52,6 +60,10 @@
 		stupid: {
 			type: "bool",
 			label: "Totally moronic"
+		},
+		favcolour: {
+			type: "select",
+			options: ["red","green","blue","yellow"]
 		}
 	};
 	
@@ -59,7 +71,7 @@
 	var people = new Backbone.Collection([
 		{name:"fred",age:22},
 		{name:"stooge",age:45,stupid:true},
-		{name:"foo",age:91}
+		{name:"foo",age:91,favcolour:2}
 	]);
 	
 	// A Mirage collection view, will use props def and render instruction to generate
