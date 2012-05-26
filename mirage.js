@@ -222,8 +222,8 @@ this.Mirage = (function(){
 	var PropertyHasOneView = PropertySelectView.extend({
 		type: "hasone",
 		preInit: function(opts){
-			opts.valueProp = opts.valueProp || "id";
-			opts.options = opts.collection.models;
+			opts.propdef.valueProp = opts.propdef.valueProp || "id";
+			opts.propdef.options = opts.collection.models;
 			return opts;
 		}
 	});

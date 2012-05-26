@@ -6,9 +6,13 @@ describe("the Property functionality", function() {
 			expect(Mirage).toBeAFunction();
 		});
 		describe("the initialize function", function() {
-			var arg, context;
+			var arg, context, prespy = jasmine.createSpy("preinit");
 			context = {
-				preInit: jasmine.createSpy(),
+				preInit: function(o){
+					prespy(o);
+					o.manipulated = true;
+					return o;
+				},
 				setElement: function(el) {
 					this.mynewelement = el;
 				},
@@ -32,7 +36,10 @@ describe("the Property functionality", function() {
 				expect(context.mynewelement).toEqual("falseFOOFFS");
 			});
 			it("should call preInit if exist in context, passing whole option obj", function() {
-				expect(context.preInit).toHaveBeenCalledWith(arg);
+				expect(prespy).toHaveBeenCalledWith(arg);
+			});
+			it("should have manipulated the argument",function(){
+				expect(arg.manipulated).toBeTruthy();
 			});
 		});
 		/*
@@ -799,27 +806,29 @@ describe("the Property functionality", function() {
 		});
 		describe("the preInit function", function() {
 			var pi = PropertyHasOneView.prototype.preInit;
-			it("should store correct values on instance", function() {
+			it("should manipulate values correctly", function() {
 				var context = {},
 					arg = {
-					valueProp: "bar",
-					collection: {
-						models: "foo"
-					}
+						collection: {
+							models: "foo"
+						},
+						propdef: {
+							valueProp: "foo"
+						}
 				};
 				pi.call(context, arg);
-				expect(context.options).toEqual(arg.collection.models);
-				expect(context.valueProp).toEqual(arg.valueProp);
+				expect(arg.propdef.options).toEqual(arg.collection.models);
 			});
 			it("should use 'id' as default for valueprop", function() {
 				var context = {},
 					arg = {
-					collection: {
-						models: "foo"
-					}
-				};
+						collection: {
+							models: "foo"
+						},
+						propdef: {}
+					};
 				pi.call(context, arg);
-				expect(context.valueProp).toEqual("id");
+				expect(arg.propdef.valueProp).toEqual("id");
 			});
 		});
 	});
