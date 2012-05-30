@@ -2,9 +2,12 @@
 <head>
   <title>Mirage testing</title>
 </head>
-<body>
+<body>	
+	<div id="wrapper">
+		<div id="col"></div>
+		<div id="edit"></div>
+	</div>
 	<pre id="code"></pre>
-	<div id="wrapper"></div><div id="edit"></div>
 
 <style type="text/css">
 .model {
@@ -32,16 +35,26 @@
 	display: block;
 }
 
+.prop-failed {
+	background-color: red;
+}
+
 #edit {
 	background-color: #AAA;
 }
 
+#wrapper {
+	margin-left: 100px;
+	padding-top: 20px;
+	float: left;
+	width: 300px;
+}
+
 #code {
 	background-color: #EEE;
-	width: 700px;
-	min-height: 500px;
-	float: right;
+	float: left;
 }
+
 </style>
 
 <script type="text/javascript" src="../libs/underscore-min.js"></script>
@@ -53,7 +66,12 @@
 
 	// Definition of the properties, used by Mirage to generate views
 	var props = {
-		name: {},
+		name: {
+			type: "text",
+			regexes: {
+				".{3,}": "Must be at least 3 letters!"
+			}
+		},
 		age: {
 			type: "integer"
 		},
@@ -87,10 +105,10 @@
 	});
 	
 	// A click on a model in a Mirage collection view will trigger a normalized event
-	peopleView.on("modelclick",function(o){
+	peopleView.on("modelclick",function(model){
 		// Now we clone a Mirage model view, setting the edit flag to true
 		var editView = new Mirage.Model.base({
-			model: o.model,
+			model: model,
 			type: "people",
 			editing: true,
 			props: props
@@ -98,12 +116,12 @@
 		$("#edit").empty().append(editView.$el);
 		// Upon submission, the Mirage model view will trigger a 'submit' event
 		editView.on("submit",function(data){
-			o.model.set(data);
+			model.set(data);
 			$("#edit").empty()
 		});
 	});
 	
-	$("#wrapper").append(peopleView.$el);
+	$("#col").append(peopleView.$el);
 	$("#code").text($("#demoscript").text());
 </script>
 

@@ -63,6 +63,7 @@ describe("The Model functionality", function() {
 			var events = base.prototype.events;
 			it("should have correct clickhandler entry",function(){
 				expect(events["click .prop"]).toEqual("propClickHandler");
+				expect(events["click .model-submit"]).toEqual("modelSubmitHandler");
 			});
 		});
 
@@ -73,7 +74,8 @@ describe("The Model functionality", function() {
 				model: {
 					on: jasmine.createSpy()
 				},
-				somedata:"baz"
+				somedata:"baz",
+				props: "WOO"
 			};
 			var context = {
 				propUpdateHandler: {foo:"bar"},
@@ -92,6 +94,9 @@ describe("The Model functionality", function() {
 			});
 			it("should call setElement with result from buildelement",function(){
 				expect(context.setElement).toHaveBeenCalledWith(arg.somedata);
+			});
+			it("should store props on the context",function(){
+				expect(context.props).toEqual(arg.props);
 			});
 		});
 
@@ -143,6 +148,171 @@ describe("The Model functionality", function() {
 			it("should call updatePropView for the relevant views",function(){
 				expect(context.views.foo.updateValueElement).toHaveBeenCalledWith("newfoo");
 				expect(context.views.bar.updateValueElement).not.toHaveBeenCalledWith("newbar");
+			});
+		});
+		
+		describe("the validateProperty function",function(){
+			var val = base.prototype.validateProperty;
+			describe("when no validation data",function(){
+				it("should return empty array",function(){
+					expect(val({})).toEqual([]);
+				});
+			});
+			describe("when have passing validation func",function(){
+				var propdef = {
+					validate: jasmine.createSpy()
+				};
+				var result = val(propdef,"val","allvals");
+				it("should call the validate function properly",function(){
+					expect(propdef.validate).toHaveBeenCalledWith("val","allvals");
+				});
+				it("should still return nothing",function(){
+					expect(result).toEqual([]);
+				});
+			});
+			describe("when have failing validation func",function(){
+				var propdef = {
+					validate: function(){
+						return "ERROR";
+					}
+				};
+				var result = val(propdef,"val","allvals");
+				it("should include error in output",function(){
+					expect(result).toEqual(["ERROR"]);
+				});
+			});
+			describe("when have passing regexes",function(){
+				var propdef = {
+					regexes: {
+						"regex1": "foo",
+						"regex2": "fooagain"
+					}
+				};
+				var matchspy = jasmine.createSpy("match");
+				var value = {
+					match: function(regex){
+						matchspy(regex);
+						return ["ok"];
+					}
+				};
+				var result = val(propdef,value,"allvals");
+				it("calls the match function on value",function(){
+					expect(matchspy).toHaveBeenCalledWith(/regex1/);
+					expect(matchspy).toHaveBeenCalledWith(/regex2/);
+				});
+				it("should still return nothing",function(){
+					expect(result).toEqual([]);
+				});
+			});
+			describe("when have failing regexes",function(){
+				var propdef = {
+					regexes: {
+						"regex1": "foo",
+						"regex2": "fooagain"
+					}
+				};
+				var matchspy = jasmine.createSpy("match");
+				var value = {
+					match: function(regex){
+						matchspy(regex);
+						return null;
+					}
+				};
+				var result = val(propdef,value,"allvals");
+				it("returns the errors",function(){
+					expect(result).toEqual(["foo","fooagain"]);
+				});
+			});
+		});
+
+		describe("the modelSubmitHandler function",function(){
+			var sub = base.prototype.modelSubmitHandler
+			describe("when passing validation",function(){
+				var inputvals = {foo:"fooval"}, valspy = jasmine.createSpy("validate");
+				var context = {
+					trigger: jasmine.createSpy("trigger"),
+					removeFailedValidationMarks: jasmine.createSpy("removemarks"),
+					getInputValues: function(){ return inputvals; },
+					props: {
+						foo: "foodef"
+					},
+					validateProperty: function(propdef,val,inputs){
+						valspy(propdef,val,inputs);
+						return [];
+					}
+				};
+				sub.call(context);
+				it("should call validateProperty with def & vals",function(){
+					expect(valspy).toHaveBeenCalledWith(context.props.foo,"fooval",inputvals);
+				});
+				it("should trigger submit event with result from getInputValues",function(){
+					expect(context.trigger).toHaveBeenCalledWith("submit",inputvals);
+				});
+				it("should call removeFailedValidationMarks",function(){
+					expect(context.removeFailedValidationMarks).toHaveBeenCalled();
+				});
+			});
+			describe("when failing validation",function(){
+				var inputvals = {foo:"fooval",bar:"barval"};
+				var context = {
+					trigger: jasmine.createSpy("trigger"),
+					getInputValues: function(){ return inputvals; },
+					props: {
+						foo: "foodef",
+						bar: "bardef"
+					},
+					removeFailedValidationMarks: function(){},
+					addFailedValidationMark: jasmine.createSpy("addmark"),
+					validateProperty: function(propdef,val,inputs){
+						return propdef === "foodef" ? ["fooerror"] : [];
+					},
+				};
+				sub.call(context);
+				var errordata = {
+					foo: {
+						name: "foo",
+						propdef: "foodef",
+						value: "fooval",
+						errors: ["fooerror"]
+					}
+				};
+				it("should trigger error event with errors data for failing props",function(){
+					expect(context.trigger).toHaveBeenCalledWith("error",{
+						inputs: inputvals,
+						errors: errordata
+					});
+				});
+				it("should call addFailedValidationMark for the failing prop",function(){
+					expect(context.addFailedValidationMark).toHaveBeenCalledWith(errordata.foo);
+
+				});
+			});
+		});
+
+		describe("the removeFailedValidationMarks function",function(){
+			var remove = base.prototype.removeFailedValidationMarks;
+			var context = {
+				$el: $("<p><span class='prop-failed'><span class='prop-failed'></span></span></p>")
+			};
+			remove.call(context);
+			it("should remove all prop-failed classes",function(){
+				expect($(".prop-failed",context.$el).length).toEqual(0);
+			});
+		});
+		
+		describe("the addFailedValidationMark function",function(){
+			var add = base.prototype.addFailedValidationMark;
+			var context = {
+				$el: $("<p><span prop-name='foo'><span prop-name='bar'></span></span></p>")
+			}
+			add.call(context,{
+				name: "foo"
+			});
+			it("should add prop-failed class to offending elements",function(){
+				expect(context.$el.find(".prop-failed[prop-name=foo]").length).toEqual(1);
+			});
+			it("should only add it to that element",function(){
+				expect(context.$el.find(".prop-failed").length).toEqual(1);
 			});
 		});
 

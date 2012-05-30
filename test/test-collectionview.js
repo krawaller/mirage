@@ -155,17 +155,31 @@ describe("The Collection functionality",function(){
 				},
 				trigger: jasmine.createSpy("trigger")
 			};
-			var $el = $("<div><span id='target' cid='5'>foo</span><span cid='4'>foo</span></span></div>");
+			var $el = $("<div><span id='target' class='model' cid=5>foo</span><span class='model' cid=4>foo</span></span></div>");
+			
+			var listener = jasmine.createSpy("modelclick");
+			var listener2 = jasmine.createSpy("modelclick2");
+			Mirage.on("modelclick",listener);
+			Mirage.on("modelclick:sometype",listener2);
+			
 			click.call(context,{
 				target: $el.find("#target")
 			});
-			var expecteddata = {
+			
+			Mirage.off("modelclick",listener);
+			Mirage.off("modelclick:sometype",listener2);
+			
+			var expecteddata = {cid:"5"};/*{
 				model: {cid:5},
 				type: "sometype"
-			}
+			}*/
 			it("should fire all relevant events", function() {
-				//expect(context.trigger).toHaveBeenCalledWith("modeclick",expecteddata);
-				//expect(context.trigger).toHaveBeenCalledWith("modeclick:sometype",expecteddata);
+				//expect(context.trigger).toHaveBeenCalledWith("modelclick",expecteddata);
+				//expect(context.trigger).toHaveBeenCalledWith("modelclick:sometype",expecteddata);
+			});
+			it("should also fire the events on the Mirage object",function(){
+				expect(listener).toHaveBeenCalledWith(expecteddata);
+				expect(listener2).toHaveBeenCalledWith(expecteddata);
 			});
 		});
 	});

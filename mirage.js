@@ -26,7 +26,7 @@ this.Mirage = (function(){
 		},
 		
 		// Called from `initialize`, passing the whole parameter object.
-		// Will call `&lt;viewkind&gt;Html` to create content, and pass along to `elementWrapper`
+		// Will call `&lt;viewkind&gt;Html` to create content
 		buildElement: function(o){
 			var propdef = o.propdef,
 				type = propdef.type,
@@ -45,7 +45,8 @@ this.Mirage = (function(){
 			return $el;
 		},
 		
-		
+		// Used in `buildElement`, responsible for building a single view part
+		// (value, label or edit control). Returns the created element jQuerified.
 		buildPart: function(propdef,val,kind){
 			var name = propdef.name,
 				html = this[kind+"Html"](propdef,val),
@@ -254,13 +255,14 @@ this.Mirage = (function(){
 		
 		events: {
 			"click .prop": "propClickHandler",
-			"click .model-submit": "modelSubmitHandler" // TODO - test existence?
+			"click .model-submit": "modelSubmitHandler"
 		},
 		
 		render: function(){return this;},
 		
 		// Model view inititialization
 		initialize: function(opts){
+			this.props = opts.props;
 			opts.model.on("change",this.propUpdateHandler,this);
 			this.setElement(this.buildElement(opts));
 		},
@@ -304,9 +306,65 @@ this.Mirage = (function(){
 			return ret;
 		},
 		
-		// Clickhandler for the edit form submit button (TODO: test)
+		
+		// Called from `modelSubmitHandler`. Responsible for validating a single propery.
+		// Returns array of all error msgs, empty array if none.
+		// If no error, should return nothing.
+		validateProperty: function(propdef,value,inputs){
+			var errors = [];
+			if (propdef.validate){
+				var res = propdef.validate(value,inputs);
+				if (res){
+					errors.push(res);
+				}
+			}
+			if (propdef.regexes){
+				for(regex in propdef.regexes){ // TODO: make sure regex not wrapped in //
+					if (!value.match(new RegExp(regex))){
+						errors.push(propdef.regexes[regex]);
+					}
+				}
+			}
+			return errors;
+		},
+		
+		// called from top of `modelSubmitHandler`, clears out eventual old error markings
+		removeFailedValidationMarks: function(){
+			this.$el.find(".prop-failed").removeClass("prop-failed");
+		},
+		
+		//Called from `modelSubmitHandler` for each property failing validation.
+		//`data` is an object containing `name`, `propdef`, `value` and `errors`.
+		addFailedValidationMark: function(data){
+			this.$el.find("[prop-name="+data.name+"]").addClass("prop-failed");
+		},
+		
+		// Clickhandler for the edit form submit button. Will validate each property
+		// using `validateProperty` and trigger `submit`/`error` events accordingly.
 		modelSubmitHandler: function(){
-			this.trigger("submit",this.getInputValues());
+			var props = this.props, errors = {}, modelok = true, inputs = this.getInputValues();
+			this.removeFailedValidationMarks();
+			for(var prop in inputs){
+				var properrors = this.validateProperty(props[prop],inputs[prop],inputs);
+				if(properrors && properrors.length){
+					modelok = false;
+					errors[prop] = {
+						name: prop,
+						propdef: props[prop],
+						value: inputs[prop],
+						errors: properrors
+					};
+					this.addFailedValidationMark(errors[prop]);
+				}
+			}
+			if (modelok){
+				this.trigger("submit",inputs);
+			} else {
+				this.trigger("error",{
+					inputs: inputs,
+					errors: errors
+				});
+			}
 		},
 		
 		// Called from `buildElement` when editing flag is true (TODO: unittest)
@@ -383,6 +441,7 @@ this.Mirage = (function(){
 		
 		// Called from `addAllModels`, and as listener to collection `add` event. Instantiates a
 		// new modelview, stores it, and adds its element to the DOM.
+		// TODO - use custom modelviewconstructor if supplied?
 		addModelView: function(model){
 			var opts = this.options, view = new this.modelviewconstructor({
 				model: model,
@@ -402,16 +461,14 @@ this.Mirage = (function(){
 		},
 		
 		// Set from `initialize` as clickhandler. Will fire normalized events on the collection
-		// when user clicks on an individual model view.
-		// TODO - maybe just fire the model straight off?
+		// and the Mirage object when user clicks on an individual model view.
 		modelClickHandler: function(e){
 			var cid = $(e.target).closest(".model").attr("cid"),
-				data = {
-					model: this.options.collection.getByCid(cid),
-					type: this.options.type
-				};
-			this.trigger("modelclick",data);
-			this.trigger("modelclick:"+data.type,data);
+				model = this.options.collection.getByCid(cid);
+			this.trigger("modelclick",model);
+			this.trigger("modelclick:"+this.options.type,model);
+			Mirage.trigger("modelclick",model);
+			Mirage.trigger("modelclick:"+this.options.type,model);
 		}
 	});
 	
@@ -421,7 +478,7 @@ this.Mirage = (function(){
 	ModelBaseView.prototype.propviewconstructors = viewconstrpackage;
 	
 	
-	return {
+	return _.extend({
 		Property: viewconstrpackage,
 		Model: {
 			base: ModelBaseView
@@ -429,5 +486,5 @@ this.Mirage = (function(){
 		Collection: {
 			base: CollectionBaseView
 		}
-	};
+	},Backbone.Events);
 }());
