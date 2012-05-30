@@ -77,7 +77,9 @@
 		},
 		stupid: {
 			type: "bool",
-			label: "Totally moronic"
+			label: "Totally moronic",
+			trueText: "silly",
+			falseText: "clever"
 		},
 		favcolour: {
 			type: "select",
@@ -99,7 +101,7 @@
 		type: "people",
 		props: props,
 		render: {
-			props: ["name","age"],
+			props: ["stupid","name","age"],
 			showlabel: false
 		}
 	});
