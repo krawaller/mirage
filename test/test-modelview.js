@@ -150,21 +150,28 @@ describe("The Model functionality", function() {
 				expect(context.views.bar.updateValueElement).not.toHaveBeenCalledWith("newbar");
 			});
 		});
-		
+	
 		describe("the validateProperty function",function(){
 			var val = base.prototype.validateProperty;
 			describe("when no validation data",function(){
 				it("should return empty array",function(){
-					expect(val({})).toEqual([]);
+					expect(val({
+						propdef: {}
+					})).toEqual([]);
 				});
 			});
 			describe("when have passing validation func",function(){
 				var propdef = {
 					validate: jasmine.createSpy()
 				};
-				var result = val(propdef,"val","allvals");
+				var data = {
+					propdef: propdef,
+					value: "val",
+					inputs: "allvals"
+				};
+				var result = val(data);
 				it("should call the validate function properly",function(){
-					expect(propdef.validate).toHaveBeenCalledWith("val","allvals");
+					expect(propdef.validate).toHaveBeenCalledWith(data);
 				});
 				it("should still return nothing",function(){
 					expect(result).toEqual([]);
@@ -176,7 +183,11 @@ describe("The Model functionality", function() {
 						return "ERROR";
 					}
 				};
-				var result = val(propdef,"val","allvals");
+				var result = val({
+					propdef: propdef,
+					value: "val",
+					inputs: "allvals"
+				});
 				it("should include error in output",function(){
 					expect(result).toEqual(["ERROR"]);
 				});
@@ -195,7 +206,11 @@ describe("The Model functionality", function() {
 						return ["ok"];
 					}
 				};
-				var result = val(propdef,value,"allvals");
+				var result = val({
+					propdef: propdef,
+					value: value,
+					inputs: "allvals"
+				});
 				it("calls the match function on value",function(){
 					expect(matchspy).toHaveBeenCalledWith(/regex1/);
 					expect(matchspy).toHaveBeenCalledWith(/regex2/);
@@ -218,9 +233,42 @@ describe("The Model functionality", function() {
 						return null;
 					}
 				};
-				var result = val(propdef,value,"allvals");
+				var result = val({
+					propdef: propdef,
+					value: value,
+					inputs: "allvals"
+				});
 				it("returns the errors",function(){
 					expect(result).toEqual(["foo","fooagain"]);
+				});
+			});
+			describe("when view has passing validate function",function(){
+				var data = {
+					propdef: {},
+					value: "foo",
+					view: {
+						validate: jasmine.createSpy("viewval")
+					}
+				};
+				var result = val(data);
+				it("should call the view validate function correctly",function(){
+					expect(data.view.validate).toHaveBeenCalledWith(data);
+				});
+				it("should still not report errors",function(){
+					expect(result).toEqual([]);
+				});
+			});
+			describe("when view has failing validate function",function(){
+				var data = {
+					propdef: {},
+					value: "foo",
+					view: {
+						validate: function(){ return "VIEWVALERROR";}
+					}
+				};
+				var result = val(data);
+				it("should include the errors from the val func",function(){
+					expect(result).toEqual(["VIEWVALERROR"]);
 				});
 			});
 		});
@@ -236,14 +284,21 @@ describe("The Model functionality", function() {
 					props: {
 						foo: "foodef"
 					},
-					validateProperty: function(propdef,val,inputs){
-						valspy(propdef,val,inputs);
+					validateProperty: function(data){
+						valspy(data);
 						return [];
-					}
+					},
+					views: {foo:"fooview"}
 				};
 				sub.call(context);
 				it("should call validateProperty with def & vals",function(){
-					expect(valspy).toHaveBeenCalledWith(context.props.foo,"fooval",inputvals);
+					expect(valspy).toHaveBeenCalledWith({
+						propdef: context.props.foo,
+						value: "fooval",
+						inputs: inputvals,
+						view: "fooview",
+						name: "foo"
+					});
 				});
 				it("should trigger submit event with result from getInputValues",function(){
 					expect(context.trigger).toHaveBeenCalledWith("submit",inputvals);
@@ -261,10 +316,11 @@ describe("The Model functionality", function() {
 						foo: "foodef",
 						bar: "bardef"
 					},
+					views: {},
 					removeFailedValidationMarks: function(){},
 					addFailedValidationMark: jasmine.createSpy("addmark"),
-					validateProperty: function(propdef,val,inputs){
-						return propdef === "foodef" ? ["fooerror"] : [];
+					validateProperty: function(data){
+						return data.propdef === "foodef" ? ["fooerror"] : [];
 					},
 				};
 				sub.call(context);

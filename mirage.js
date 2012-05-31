@@ -111,6 +111,13 @@ this.Mirage = (function(){
 	var PropertyIntegerView = PropertyTextView.extend({
 		getInputValue: function(){
 			return parseInt(this.$(".prop-edit-ctrl").val(),10);
+		},
+		// if a view has a validate function, this will be called from the `validateProperty`
+		// method on a Mirage Model. It should return an error string, or nothing if validation
+		// passed. The data object is the same as was passed to `validateProperty`, and thus
+		// contains `name`, `value`, `propdef`, `inputs` and `view`.
+		validate: function(data){
+			return isNaN(data.value) ? "Must enter a number!" : undefined;
 		}
 	});
 	
@@ -310,10 +317,12 @@ this.Mirage = (function(){
 		// Called from `modelSubmitHandler`. Responsible for validating a single propery.
 		// Returns array of all error msgs, empty array if none.
 		// If no error, should return nothing.
-		validateProperty: function(propdef,value,inputs){
-			var errors = [];
+		// Arg contains `propdef`, `value`, `inputs` (all control values), `view` (the
+		// view for the property to be validated) and `name`
+		validateProperty: function(data){
+			var errors = [], value = data.value, propdef = data.propdef
 			if (propdef.validate){
-				var res = propdef.validate(value,inputs);
+				var res = propdef.validate(data);
 				if (res){
 					errors.push(res);
 				}
@@ -323,6 +332,12 @@ this.Mirage = (function(){
 					if (!value.match(new RegExp(regex))){
 						errors.push(propdef.regexes[regex]);
 					}
+				}
+			}
+			if (data.view && data.view.validate){
+				var res = data.view.validate(data);
+				if (res){
+					errors.push(res);
 				}
 			}
 			return errors;
@@ -345,14 +360,20 @@ this.Mirage = (function(){
 			var props = this.props, errors = {}, modelok = true, inputs = this.getInputValues();
 			this.removeFailedValidationMarks();
 			for(var prop in inputs){
-				var properrors = this.validateProperty(props[prop],inputs[prop],inputs);
+				var properrors = this.validateProperty({
+					propdef: props[prop],
+					value: inputs[prop],
+					inputs: inputs,
+					view: this.views[prop],
+					name: prop
+				}); // props[prop],inputs[prop],inputs);
 				if(properrors && properrors.length){
 					modelok = false;
 					errors[prop] = {
 						name: prop,
 						propdef: props[prop],
 						value: inputs[prop],
-						errors: properrors
+						errors: properrors,
 					};
 					this.addFailedValidationMark(errors[prop]);
 				}

@@ -359,6 +359,16 @@ describe("the Property functionality", function() {
 				expect(result).toEqual(42);
 			});
 		});
+		describe("the validate function",function(){
+			var val = intview.prototype.validate;
+			it("should return nothing if value is a proper number string",function(){
+				expect(val({value:"45"})).toBeUndefined();
+			});
+			// TODO - make string changable somehow.
+			it("should return 'Must enter a number!' if not",function(){
+				expect(val({value:"dsa"})).toEqual("Must enter a number!");
+			});
+		});
 	});
 
 	describe("the PropertyTextView", function() {
