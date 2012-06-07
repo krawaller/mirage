@@ -39,3 +39,15 @@ referred to as a `propdef`. It looks like the following:
     }
 
 *WIP*
+
+## Testing
+
+Mirage is developed in a TDD/BDD-fashion using Jasmine. The testsuite can be run straight in the browser.
+Here is [a GithubPages-hosted version](http://krawaller.github.com/mirage/test/testsuite.html)
+
+Here are the relevant docs for foreign libraries used in the testing process:
+
+*  [Jasmine](http://pivotal.github.com/jasmine/jsdoc/symbols/jasmine.Matchers.html)
+*  [Sinon](http://sinonjs.org/docs/)
+*  [Sinon matchers for Jasmine](https://github.com/froots/jasmine-sinon)
+*  [jQuery matchers for Jasmine](https://github.com/velesin/jasmine-jquery)
