@@ -49,6 +49,9 @@ this.Mirage = (function(){
 		// (value, label or edit control). Returns the created element jQuerified.
 		// If the instance has a build function for the part kind, use that instead.
 		buildPart: function(propdef,val,kind){
+			if (this[kind+"Part"]){
+				return this[kind+"Part"](propdef,val);
+			}
 			var name = propdef.name,
 				html = this[kind+"Html"](propdef,val),
 				type = propdef.type;

@@ -49,144 +49,142 @@ describe("the Property functionality", function() {
 
 		describe("the buildPart function",function(){
 			var build = PropBaseView.prototype.buildPart;
-			var context = {
-				fooHtml: function(propdef,val,kind){ return "foohtml-"+val+"-"+kind;},
-				barPart: function(propdef,val,kind){ return "barpart"; }
+			var propdef = {
+				type: "sometype",
+				name: "somename"
 			};
-			describe("",function(){
-				
+			var value = "VAL";
+			var context = {
+				fooHtml: sinon.stub().returns("FOOHTML"),
+				editHtml: sinon.stub().returns("EDITHTML"),
+				barPart: sinon.stub().returns("barpart"),
+				barHtml: sinon.spy()
+			};
+			describe("for regular kind element",function(){
+				var res = build.call(context,propdef,value,"foo");
+				it("should call the correct html func",function(){
+					expect(context.fooHtml).toHaveBeenCalledWith(propdef,value);
+				});
+				describe("the returned element",function(){
+					it("should be a span",function(){
+						expect(res).toBe("span");
+					});
+					it("should have the correct html",function(){
+						expect(res).toHaveHtml("FOOHTML");
+					});
+					it("should have the correct classes",function(){
+						expect(res).toHaveClass("prop-foo");
+						expect(res).toHaveClass("prop-sometype-foo");
+						expect(res).toHaveClass("prop-sometype-somename-foo");
+					});
+				});
+			});
+			describe("for edit kind element",function(){
+				var res = build.call(context,propdef,value,"edit");
+				it("should wrap html in for tag",function(){
+					expect(res).toHaveHtml("<label for='somename'>EDITHTML</label>");
+				});
+			});
+			describe("when have a Part function for the element kind",function(){
+				var res = build.call(context,propdef,value,"bar");
+				it("should call the part function with propdef and value",function(){
+					expect(context.barPart).toHaveBeenCalledWith(propdef,value);
+				});
+				it("should return the result from barPart",function(){
+					expect(res).toEqual("barpart");
+				});
+				it("should not automatically call html func",function(){
+					expect(context.barHtml).not.toHaveBeenCalled();
+				});
 			});
 		});
 
-		/*
-		describe("the buildElement function", function() {
+		describe("the buildElement function",function(){
 			var build = PropBaseView.prototype.buildElement;
-			describe("when not editing and not showing label", function() {
-				var context, valspy, wrapspy, result, arg;
-				valspy = jasmine.createSpy("valueHtml");
-				wrapspy = jasmine.createSpy("elementWrapper");
-				context = {
-					valueHtml: function(propdef, val) {
-						valspy(propdef, val);
-						return "bin";
-					},
-					elementWrapper: function(o) {
-						wrapspy(o);
-						return "baz";
-					},
-					editHtml: jasmine.createSpy(),
-					labelHtml: jasmine.createSpy()
+			describe("when building regular element",function(){
+				var context = {
+					buildPart: sinon.stub().returnsArg(2) // will return value/label/edit
 				};
-				arg = {
-					value: "bar",
+				var arg = {
 					propdef: {
+						type: "sometype",
 						name: "somename"
-					}
+					},
+					value: "someval"
 				};
-				result = build.call(context, arg);
-				it("should call valueHtml with propdef and value", function() {
-					expect(valspy).toHaveBeenCalledWith(arg.propdef, arg.value);
+				var res = build.call(context,arg);
+				it("should call buildPart to build a value element",function(){
+					expect(context.buildPart).toHaveBeenCalledWith(arg.propdef,arg.value,"value");
 				});
-				it("should elementwrapper with correct args ", function() {
-					expect(wrapspy).toHaveBeenCalledWith({
-						content: "bin",
-						name: "somename",
-						force: true
+				it("should not create a label",function(){
+					expect(context.buildPart).not.toHaveBeenCalledWith(arg.propdef,arg.value,"label");
+				});
+				describe("the returned element",function(){
+					it("should be a span",function(){
+						expect(res).toBe("span");
+					});
+					it("should have html from buildPart func",function(){
+						expect(res).toHaveHtml("value");
+					});
+					it("should have the relevant classes",function(){
+						expect(res).toHaveClass("prop");
+						expect(res).toHaveClass("prop-sometype");
+						expect(res).toHaveClass("prop-sometype-somename");
+						expect(res).not.toHaveClass("prop-editing");
+					});
+					it("should have name stored as attribute",function(){
+						expect(res).toHaveAttr("prop-name","somename");
 					});
 				});
-				it("should return the result from the elwrap call", function() {
-					expect(result).toEqual("baz");
-				});
-				it("should not call unneeded html funcs", function() {
-					expect(context.editHtml).not.toHaveBeenCalled();
-					expect(context.labelHtml).not.toHaveBeenCalled();
-				});
 			});
-			describe("when editing", function() {
-				var context, html, wrapspy, result, arg;
-				htmlspy = jasmine.createSpy("editHtml");
-				labelspy = jasmine.createSpy("labelHtml");
-				wrapspy = jasmine.createSpy("elementWrapper");
-				context = {
-					editHtml: function(propdef, val) {
-						htmlspy(propdef, val);
-						return "boo";
-					},
-					labelHtml: function(propdef, val) {
-						labelspy(propdef, val);
-						return "label";
-					},
-					elementWrapper: function(o) {
-						wrapspy(o);
-						return "baz";
-					},
-					valueHtml: jasmine.createSpy()
+			describe("when showlabel set to true",function(){
+				var context = {
+					buildPart: sinon.stub().returnsArg(2) // will return value/label/edit
 				};
-				arg = {
-					value: "bar",
+				var arg = {
 					propdef: {
-						name: "foo"
+						type: "sometype",
+						name: "somename"
 					},
-					editing: true
+					showlabel: true,
+					value: "someval"
 				};
-				result = build.call(context, arg);
-				it("should call editHtml with propdef and value", function() {
-					expect(htmlspy).toHaveBeenCalledWith(arg.propdef, arg.value);
+				var res = build.call(context,arg);
+				it("should have created both a label and a value",function(){
+					expect(context.buildPart).toHaveBeenCalledWith(arg.propdef,arg.value,"value");
+					expect(context.buildPart).toHaveBeenCalledWith(arg.propdef,arg.value,"label");
 				});
-				it("should call labelHtml too with propdef and value", function() {
-					expect(labelspy).toHaveBeenCalledWith(arg.propdef, arg.value);
-				});
-				it("should elementwrapper with correct args ", function() {
-					expect(wrapspy).toHaveBeenCalledWith({
-						content: "<label for='foo'>label</label>boo",
-						name: "foo",
-						force: false
-					});
-				});
-				it("should not call unneeded html func", function() {
-					expect(context.valueHtml).not.toHaveBeenCalled();
+				it("should use both results in element html",function(){
+					expect(res).toHaveHtml("labelvalue");
 				});
 			});
-			describe("when showlabel is true", function() {
-				var context, valspy, wrapspy, labelspy, result, arg;
-				valspy = jasmine.createSpy("valueHtml");
-				labelspy = jasmine.createSpy("labelHtml");
-				wrapspy = jasmine.createSpy("elementWrapper");
-				context = {
-					valueHtml: function(propdef, val) {
-						valspy(propdef, val);
-						return "bin";
-					},
-					labelHtml: function(propdef, val) {
-						labelspy(propdef, val);
-						return "label";
-					},
-					elementWrapper: function(o) {
-						wrapspy(o);
-						return "baz";
-					}
+			describe("when building edit element",function(){
+				var context = {
+					buildPart: sinon.stub().returnsArg(2) // will return value/label/edit
 				};
-				arg = {
-					value: "bar",
-					propdef: "foo",
-					showlabel: true
+				var arg = {
+					propdef: {
+						type: "sometype",
+						name: "somename"
+					},
+					editing: true,
+					value: "someval"
 				};
-				result = build.call(context, arg);
-				it("should call valueHtml as usual with propdef and value", function() {
-					expect(valspy).toHaveBeenCalledWith(arg.propdef, arg.value);
+				var res = build.call(context,arg);
+				it("should have created both an edit and a label part",function(){
+					expect(context.buildPart).toHaveBeenCalledWith(arg.propdef,arg.value,"edit");
+					expect(context.buildPart).toHaveBeenCalledWith(arg.propdef,arg.value,"label");
 				});
-				it("should call labelHtml", function() {
-					expect(labelspy).toHaveBeenCalledWith(arg.propdef, arg.value);
+				it("should not have created a value part",function(){
+					expect(context.buildPart).not.toHaveBeenCalledWith(arg.propdef,arg.value,"value");
 				});
-				it("should call elementwrapper with content having label first", function() {
-					expect(wrapspy).toHaveBeenCalledWith({
-						content: "labelbin",
-						force: true
-					});
-				});
+				it("should add editing class to the resulting element",function(){
+					expect(res).toHaveClass("prop-editing");
+					expect(res).toHaveClass("prop-sometype-editing");
+					expect(res).toHaveClass("prop-sometype-somename-editing");
+				})
 			});
 		});
-		*/
 
 		describe("the updateValueElement function", function() {
 			var htmlspy = sinon.spy(),
