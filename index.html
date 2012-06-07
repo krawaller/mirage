@@ -39,12 +39,28 @@ referred to as a <code>propdef</code>. It looks like the following:</p>
 
 <p><em>WIP</em></p>
 
+<h2>Demos</h2>
+
+<p>In spite of fancy plans there aren't that much up and running yet, however a small demonstration can be found
+<a href="http://krawaller.github.com/mirage/dev/testsuite.html">here</a>.</p>
+
+<h2>Build process</h2>
+
+<p>As Mirage is a pure web library, there isn't much to the build process. We currently don't have a minified version,
+so the only things you need to do when pushing a new version is to...</p>
+
+<ul>
+<li>regenerate the annotade sourcecode by running <code>docco mirage.js</code> from the mirage.js folder.</li>
+<li>regenerate index.html from README.md, for example using mdown: <code>cat README.md | mdown &gt; index.html</code></li>
+</ul>
+
 <h2>Testing</h2>
 
 <p>Mirage is developed in a TDD/BDD-fashion using Jasmine. The testsuite can be run straight in the browser.
-Here is <a href="http://krawaller.github.com/mirage/test/testsuite.html">a GithubPages-hosted version</a></p>
+Here is <a href="http://krawaller.github.com/mirage/test/testsuite.html">a GithubPages-hosted version</a> running the 
+latest code.</p>
 
-<p>Here are the relevant docs for foreign libraries used in the testing process:</p>
+<p>Several external libraries are involved in the testing process:</p>
 
 <ul>
 <li><a href="http://pivotal.github.com/jasmine/jsdoc/symbols/jasmine.Matchers.html">Jasmine</a></li>

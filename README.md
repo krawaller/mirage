@@ -40,12 +40,26 @@ referred to as a `propdef`. It looks like the following:
 
 *WIP*
 
+## Demos
+
+In spite of fancy plans there aren't that much up and running yet, however a small demonstration can be found
+[here](http://krawaller.github.com/mirage/dev/testsuite.html).
+
+## Build process
+
+As Mirage is a pure web library, there isn't much to the build process. We currently don't have a minified version,
+so the only things you need to do when pushing a new version is to...
+
+*  regenerate the annotade sourcecode by running `docco mirage.js` from the mirage.js folder.
+*  regenerate index.html from README.md, for example using mdown: `cat README.md | mdown > index.html`
+
 ## Testing
 
 Mirage is developed in a TDD/BDD-fashion using Jasmine. The testsuite can be run straight in the browser.
-Here is [a GithubPages-hosted version](http://krawaller.github.com/mirage/test/testsuite.html)
+Here is [a GithubPages-hosted version](http://krawaller.github.com/mirage/test/testsuite.html) running the 
+latest code.
 
-Here are the relevant docs for foreign libraries used in the testing process:
+Several external libraries are involved in the testing process:
 
 *  [Jasmine](http://pivotal.github.com/jasmine/jsdoc/symbols/jasmine.Matchers.html)
 *  [Sinon](http://sinonjs.org/docs/)
