@@ -3,7 +3,7 @@ describe("the Property functionality", function() {
 	describe("the PropertyBaseView", function() {
 		var PropBaseView = Mirage.Property.base;
 		it("is defined", function() {
-			expect(Mirage).toBeAFunction();
+			expect(Mirage).toBeAnObject();
 		});
 		describe("the initialize function", function() {
 			var arg, context;
@@ -66,6 +66,9 @@ describe("the Property functionality", function() {
 					expect(context.fooHtml).toHaveBeenCalledWith(propdef,value);
 				});
 				describe("the returned element",function(){
+					it("should be jquerified",function(){
+						expect(res).toBeA($);
+					});
 					it("should be a span",function(){
 						expect(res).toBe("span");
 					});
@@ -120,6 +123,9 @@ describe("the Property functionality", function() {
 					expect(context.buildPart).not.toHaveBeenCalledWith(arg.propdef,arg.value,"label");
 				});
 				describe("the returned element",function(){
+					it("should be jquerified",function(){
+						expect(res).toBeA($);
+					});
 					it("should be a span",function(){
 						expect(res).toBe("span");
 					});
@@ -322,7 +328,7 @@ describe("the Property functionality", function() {
 	describe("the PropertyTextView", function() {
 		var PropertyTextView = Mirage.Property.text;
 		it("is defined", function() {
-			expect(typeof Mirage).toBeAFunction();
+			expect(PropertyTextView).toBeAFunction();
 		});
 		it("should inherit from PropBaseView", function() {
 			expect(PropertyTextView.__super__).toBe(Mirage.Property.base.prototype);
@@ -369,7 +375,7 @@ describe("the Property functionality", function() {
 	describe("the PropertyBoolView", function() {
 		var PropertyBoolView = Mirage.Property.bool;
 		it("is defined", function() {
-			expect(typeof Mirage).toBeAFunction();
+			expect(PropertyBoolView).toBeAFunction();
 		});
 		it("should inherit from PropBaseView", function() {
 			expect(PropertyBoolView.__super__).toBe(Mirage.Property.base.prototype);

@@ -1,16 +1,13 @@
-jasmine.Matchers.prototype.toBeAFunction = function() {
-	if (!this.actual){
-		return true;
-	}
-	return true; // (this.actual || 666).toString() == '[object Fuunction]';
-};
-
-jasmine.Matchers.prototype.toBeAnObject = function() {
-	var getType = {};
-	return this.actual && (getType.toString.call(this.actual) == '[object Object]');
-};
-
-jasmine.Matchers.prototype.toBeA = function(constr) {
-	var getType = {};
-	return this.actual && (this.actual instanceof constr);
-};
+beforeEach(function(){
+	this.addMatchers({
+		toBeAFunction: function() {
+			return typeof this.actual === "function";
+		},
+		toBeAnObject: function() {
+			return typeof this.actual === "object";
+		},
+		toBeA: function(constr) {
+			return this.actual instanceof constr;
+		}
+	});
+});
