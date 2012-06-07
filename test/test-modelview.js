@@ -68,32 +68,30 @@ describe("The Model functionality", function() {
 		});
 
 		describe("the initialize function",function(){
-			var init = base.prototype.initialize,
-				buildspy = jasmine.createSpy();
+			var init = base.prototype.initialize;
 			var arg = {
 				model: {
-					on: jasmine.createSpy()
+					on: sinon.spy()
 				},
 				somedata:"baz",
 				props: "WOO"
 			};
 			var context = {
 				propUpdateHandler: {foo:"bar"},
-				setElement: jasmine.createSpy(),
-				buildElement: function(o){
-					buildspy(o);
-					return o.somedata
-				}
+				setElement: sinon.spy(),
+				buildElement: sinon.spy(function(o){
+					return "BUILD";
+				})
 			};
 			init.call(context,arg);
 			it("should set event listener on the model",function(){
 				expect(arg.model.on).toHaveBeenCalledWith("change",context.propUpdateHandler,context);
 			});
 			it("should call buildElement with the args obj",function(){
-				expect(buildspy).toHaveBeenCalledWith(arg);
+				expect(context.buildElement).toHaveBeenCalledWith(arg);
 			});
 			it("should call setElement with result from buildelement",function(){
-				expect(context.setElement).toHaveBeenCalledWith(arg.somedata);
+				expect(context.setElement).toHaveBeenCalledWith("BUILD");
 			});
 			it("should store props on the context",function(){
 				expect(context.props).toEqual(arg.props);
@@ -130,10 +128,10 @@ describe("The Model functionality", function() {
 			var context = {
 				views: {
 					foo: {
-						updateValueElement: jasmine.createSpy()
+						updateValueElement: sinon.spy()
 					},
 					bar: {
-						updateValueElement: jasmine.createSpy()
+						updateValueElement: sinon.spy()
 					}
 				}
 			};
@@ -162,7 +160,7 @@ describe("The Model functionality", function() {
 			});
 			describe("when have passing validation func",function(){
 				var propdef = {
-					validate: jasmine.createSpy()
+					validate: sinon.spy()
 				};
 				var data = {
 					propdef: propdef,
@@ -199,12 +197,10 @@ describe("The Model functionality", function() {
 						"regex2": "fooagain"
 					}
 				};
-				var matchspy = jasmine.createSpy("match");
 				var value = {
-					match: function(regex){
-						matchspy(regex);
+					match: sinon.spy(function(regex){
 						return ["ok"];
-					}
+					})
 				};
 				var result = val({
 					propdef: propdef,
@@ -212,8 +208,8 @@ describe("The Model functionality", function() {
 					inputs: "allvals"
 				});
 				it("calls the match function on value",function(){
-					expect(matchspy).toHaveBeenCalledWith(/regex1/);
-					expect(matchspy).toHaveBeenCalledWith(/regex2/);
+					expect(value.match).toHaveBeenCalledWith(/regex1/);
+					expect(value.match).toHaveBeenCalledWith(/regex2/);
 				});
 				it("should still return nothing",function(){
 					expect(result).toEqual([]);
@@ -228,10 +224,9 @@ describe("The Model functionality", function() {
 				};
 				var matchspy = jasmine.createSpy("match");
 				var value = {
-					match: function(regex){
-						matchspy(regex);
+					match: sinon.spy(function(regex){
 						return null;
-					}
+					})
 				};
 				var result = val({
 					propdef: propdef,
@@ -247,7 +242,7 @@ describe("The Model functionality", function() {
 					propdef: {},
 					value: "foo",
 					view: {
-						validate: jasmine.createSpy("viewval")
+						validate: sinon.spy()
 					}
 				};
 				var result = val(data);
@@ -276,23 +271,22 @@ describe("The Model functionality", function() {
 		describe("the modelSubmitHandler function",function(){
 			var sub = base.prototype.modelSubmitHandler
 			describe("when passing validation",function(){
-				var inputvals = {foo:"fooval"}, valspy = jasmine.createSpy("validate");
+				var inputvals = {foo:"fooval"};
 				var context = {
-					trigger: jasmine.createSpy("trigger"),
-					removeFailedValidationMarks: jasmine.createSpy("removemarks"),
+					trigger: sinon.spy(),
+					removeFailedValidationMarks: sinon.spy(),
 					getInputValues: function(){ return inputvals; },
 					props: {
 						foo: "foodef"
 					},
-					validateProperty: function(data){
-						valspy(data);
+					validateProperty: sinon.spy(function(data){
 						return [];
-					},
+					}),
 					views: {foo:"fooview"}
 				};
 				sub.call(context);
 				it("should call validateProperty with def & vals",function(){
-					expect(valspy).toHaveBeenCalledWith({
+					expect(context.validateProperty).toHaveBeenCalledWith({
 						propdef: context.props.foo,
 						value: "fooval",
 						inputs: inputvals,
@@ -310,7 +304,7 @@ describe("The Model functionality", function() {
 			describe("when failing validation",function(){
 				var inputvals = {foo:"fooval",bar:"barval"};
 				var context = {
-					trigger: jasmine.createSpy("trigger"),
+					trigger: sinon.spy(),
 					getInputValues: function(){ return inputvals; },
 					props: {
 						foo: "foodef",
@@ -318,7 +312,7 @@ describe("The Model functionality", function() {
 					},
 					views: {},
 					removeFailedValidationMarks: function(){},
-					addFailedValidationMark: jasmine.createSpy("addmark"),
+					addFailedValidationMark: sinon.spy(),
 					validateProperty: function(data){
 						return data.propdef === "foodef" ? ["fooerror"] : [];
 					},

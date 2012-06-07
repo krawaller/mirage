@@ -6,16 +6,9 @@ describe("the Property functionality", function() {
 			expect(Mirage).toBeAFunction();
 		});
 		describe("the initialize function", function() {
-			var arg, context, prespy = jasmine.createSpy("preinit");
+			var arg, context;
 			context = {
-				preInit: function(o){
-					prespy(o);
-					o.manipulated = true;
-					return o;
-				},
-				setElement: function(el) {
-					this.mynewelement = el;
-				},
+				setElement: sinon.spy(),
 				buildElement: function(o) {
 					return o.editing + o.propdef + "FFS";
 				}
@@ -33,88 +26,37 @@ describe("the Property functionality", function() {
 				expect(context.value).toEqual(arg.value);
 			});
 			it("should call setElement with result from calling buildElement with args", function() {
-				expect(context.mynewelement).toEqual("falseFOOFFS");
+				expect(context.setElement).toHaveBeenCalledWith("falseFOOFFS");
 			});
-			it("should call preInit if exist in context, passing whole option obj", function() {
-				expect(prespy).toHaveBeenCalledWith(arg);
-			});
-			it("should have manipulated the argument",function(){
-				expect(arg.manipulated).toBeTruthy();
+			describe("when having a processArgs function",function(){
+				var context = {
+					setElement: sinon.spy(),
+					buildElement: sinon.spy(),
+					processArgs: sinon.spy(function(o){
+						return processedobj;
+					})
+				};
+				var processedobj = {foo:"bar"};
+				PropBaseView.prototype.initialize.call(context, arg);
+				it("should call processArgs if exist in context, passing whole option obj", function() {
+					expect(context.processArgs).toHaveBeenCalledWith(arg);
+				});
+				it("should have called buildElement with processed object instead",function(){
+					expect(context.buildElement).toHaveBeenCalledWith(processedobj);
+				});
 			});
 		});
-		/*
-		describe("the elementWrapper function", function() {
-			var wrapper = PropBaseView.prototype.elementWrapper;
-			it("should return jQuery object, wrapped and processed with defaults", function() {
-				var $el = wrapper({
-					content: "test",
-					type: "text",
-					name: "somename"
-				});
-				expect($el).toBeA(jQuery);
-				expect($el).toBe("span");
-				expect($el.length).toEqual(1);
-				expect($el).toHaveHtml("test");
-				expect($el).toHaveClass("prop");
-				expect($el).toHaveClass("prop-text");
-				expect($el).toHaveClass("prop-text-somename");
-				expect($el).toHaveAttr("prop-name", "somename");
-			});
-			it("should wrap with given tag", function() {
-				var $el = wrapper({
-					content: "test",
-					type: "text",
-					kind: "value",
-					tag: "div"
-				});
-				expect($el).toBe("div");
-				expect($el.length).toEqual(1);
-				expect($el).toHaveHtml("test");
-			});
-			it("should not wrap if content is exactly 1 tag", function() {
-				var $el = wrapper({
-					content: "<p>test</p>",
-					type: "text",
-					kind: "value"
-				});
-				expect($el).toBe("p");
-				expect($el.length).toEqual(1);
-				expect($el).toHaveHtml("test");
-			});
-			it("should wrap 1-tag content if force is true", function() {
-				var $el = wrapper({
-					content: "<p>test</p>",
-					type: "text",
-					kind: "value",
-					force: "true"
-				});
-				expect($el).toBe("span");
-				expect($el).toHaveHtml("<p>test</p>");
-			});
-			it("should set given attributes", function() {
-				var $el = wrapper({
-					content: "test",
-					type: "text",
-					kind: "value",
-					attributes: {
-						foo: "bar"
-					}
-				});
-				expect($el).toHaveAttr("foo", "bar");
-			});
-			it("should set given classes", function() {
-				var $el = wrapper({
-					content: "test",
-					type: "text",
-					kind: "value",
-					classes: "foo bar"
-				});
-				expect($el).toHaveClass("foo");
-				expect($el).toHaveClass("bar");
-				expect($el).not.toHaveClass("prop-value");
+
+		describe("the buildPart function",function(){
+			var build = PropBaseView.prototype.buildPart;
+			var context = {
+				fooHtml: function(propdef,val,kind){ return "foohtml-"+val+"-"+kind;},
+				barPart: function(propdef,val,kind){ return "barpart"; }
+			};
+			describe("",function(){
+				
 			});
 		});
-		*/
 
 		/*
 		describe("the buildElement function", function() {
@@ -247,15 +189,14 @@ describe("the Property functionality", function() {
 		*/
 
 		describe("the updateValueElement function", function() {
-			var findspy = jasmine.createSpy(), htmlspy = jasmine.createSpy(),
+			var htmlspy = sinon.spy(),
 				context = {
 				$el: {
-					find: function(o){
-						findspy(o);
+					find: sinon.spy(function(o){
 						return {
-							html: htmlspy
-						};
-					}
+							html:htmlspy
+						}
+					})
 				},
 				propdef: {
 					name: "foo"
@@ -328,7 +269,15 @@ describe("the Property functionality", function() {
 				expect(PropBaseView.prototype.render.call(obj)).toEqual(obj);
 			});
 		});
-
+		describe("the editHtml function",function(){
+			var propdef = {
+				name: "foo"
+			};
+			var edit = PropBaseView.prototype.editHtml;
+			it("should throw an error",function(){
+				//expect(edit(propdef)).toThrow("No editHtml function defined for foo!");
+			});
+		})
 	});
 
 	describe("the PropertyIntegerView",function(){
@@ -814,8 +763,8 @@ describe("the Property functionality", function() {
 		it("should inherit from PropSelectView", function() {
 			expect(PropertyHasOneView.__super__).toBe(Mirage.Property.select.prototype);
 		});
-		describe("the preInit function", function() {
-			var pi = PropertyHasOneView.prototype.preInit;
+		describe("the processArgs function", function() {
+			var pi = PropertyHasOneView.prototype.processArgs;
 			it("should manipulate values correctly", function() {
 				var context = {},
 					arg = {
@@ -848,8 +797,8 @@ describe("the Property functionality", function() {
 		it("is defined", function() {
 			expect(PropertyHasManyView).toBeDefined();
 		});
-		it("has same preInit as hasone", function() {
-			expect(PropertyHasManyView.prototype.preInit).toBe(Mirage.Property.hasone.prototype.preInit);
+		it("has same processArgs as hasone", function() {
+			expect(PropertyHasManyView.prototype.processArgs).toBe(Mirage.Property.hasone.prototype.processArgs);
 		});
 		it("has correct type", function() {
 			expect(PropertyHasManyView.prototype.type).toEqual("hasmany");

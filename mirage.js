@@ -16,10 +16,10 @@ this.Mirage = (function(){
 		// * `[editing]`: set to true if edit control should be displayed instead of value
 		// * `[showlabel]`: boolean. Label is always drawn if `editing` is true.
 		initialize: function(opts){
-			if (this.preInit){
-				opts = this.preInit(opts);
+			if (this.processArgs){
+				opts = this.processArgs(opts);
 			}
-			var o = opts.propdef, click = o.clickEvent;
+			var o = opts.propdef;
 			this.propdef = o;
 			this.value = opts.value;
 			this.setElement(this.buildElement(opts));
@@ -47,12 +47,13 @@ this.Mirage = (function(){
 		
 		// Used in `buildElement`, responsible for building a single view part
 		// (value, label or edit control). Returns the created element jQuerified.
+		// If the instance has a build function for the part kind, use that instead.
 		buildPart: function(propdef,val,kind){
 			var name = propdef.name,
 				html = this[kind+"Html"](propdef,val),
 				type = propdef.type;
 			if (kind==="edit"){
-				html = "<label for='"+name+"'>"+html+"</label>";
+				html = "<label for='"+name+"'>"+html+"</label>"; // TODO - make this actually work as real label :)
 			}
 			return $("<span>").html(html).addClass("prop-"+kind+" prop-"+type+"-"+kind+" prop-"+type+"-"+name+"-"+kind);
 		},
@@ -78,9 +79,10 @@ this.Mirage = (function(){
 		},
 		
 		
-		// Generates html for the edit control. Must be overridden in inheriting class.
-		editHtml: function(o,val){
-			return val;
+		// Generates html for the edit control. Must be overridden in inheriting class if they are
+		// editable.
+		editHtml: function(propdef,val){
+			throw "No editHtml function defined for "+propdef.name+"!";
 		},
 		
 		// Returns the current value of the edit element control. Used in the Mirage ModelView to 
@@ -142,7 +144,7 @@ this.Mirage = (function(){
 	var PropertySelectView = PropertyBaseView.extend({
 		
 		// if options is just array of strings, expand that to objects with val prop
-		preInit: function(opts){
+		processArgs: function(opts){
 			var options = opts.propdef.options, processed = [];
 			for(var i=0, l=options.length;i<l;i++){
 				var o = options[i];
@@ -229,7 +231,7 @@ this.Mirage = (function(){
 	// The HasOne view, inheriting from SelectView
 	var PropertyHasOneView = PropertySelectView.extend({
 		type: "hasone",
-		preInit: function(opts){
+		processArgs: function(opts){
 			opts.propdef.valueProp = opts.propdef.valueProp || "id";
 			opts.propdef.options = opts.collection.models;
 			return opts;
@@ -239,20 +241,8 @@ this.Mirage = (function(){
 	// The HasMany view, inheriting from MultiSelectView
 	var PropertyHasManyView = PropertyMultiSelectView.extend({
 		type: "hasmany",
-		preInit: PropertyHasOneView.prototype.preInit
+		processArgs: PropertyHasOneView.prototype.processArgs
 	});
-
-	
-	var viewconstrpackage = {
-		base: PropertyBaseView,
-		text: PropertyTextView,
-		integer: PropertyIntegerView,
-		bool: PropertyBoolView,
-		select: PropertySelectView,
-		multiselect: PropertyMultiSelectView,
-		hasone: PropertyHasOneView,
-		hasmany: PropertyHasManyView
-	};
 	
 	
 	// ### Model functionality
@@ -398,6 +388,7 @@ this.Mirage = (function(){
 		// The views will be supplied with the current value for the property, collected from `model`.
 		// All used views are stored in a `views` property on the context for later access.
 		// If no `render` instruction is provided, all properties are shown, with labels.
+		// TODO - split this function!
 		buildElement: function(opts){
 			var $el = $("<div>").addClass("model model-"+opts.type).attr("cid",opts.model.cid);
 			if (!opts.render){
@@ -494,10 +485,22 @@ this.Mirage = (function(){
 	});
 	
 	// ### Cross-pollination shortcuts
+	
+	var viewconstrpackage = {
+		base: PropertyBaseView,
+		text: PropertyTextView,
+		integer: PropertyIntegerView,
+		bool: PropertyBoolView,
+		select: PropertySelectView,
+		multiselect: PropertyMultiSelectView,
+		hasone: PropertyHasOneView,
+		hasmany: PropertyHasManyView
+	};
+	// TODO - make sure crosspollinated packages include user-added views!
+	
 	CollectionBaseView.prototype.modelviewconstructor = ModelBaseView;
 	ModelBaseView.prototype.collectionviewconstructor = CollectionBaseView;
 	ModelBaseView.prototype.propviewconstructors = viewconstrpackage;
-	
 	
 	return _.extend({
 		Property: viewconstrpackage,

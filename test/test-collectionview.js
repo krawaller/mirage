@@ -19,23 +19,21 @@ describe("The Collection functionality",function(){
 			});
 		});
 		describe("the initialize func",function(){
-			var init = base.prototype.initialize,
-				buildspy = jasmine.createSpy("build");
+			var init = base.prototype.initialize;
 			it("is defined", function() {
 				expect(base).toBeA(Function);
 			});
 			var context = {
 				foo:"bar",
-				buildElement: function(o){
-					buildspy(o);
+				buildElement: sinon.spy(function(o){
 					return "somehtml";
-				},
-				setElement: jasmine.createSpy("setelement"),
-				addAllModels: jasmine.createSpy("addall")
+				}),
+				setElement: sinon.spy(),
+				addAllModels: sinon.spy()
 			};
 			var arg = {
 				collection: {
-					on: jasmine.createSpy("listener"),
+					on: sinon.spy(),
 					models: [{cid:1},{cid:2},{cid:45}]
 				}
 			};
@@ -45,7 +43,7 @@ describe("The Collection functionality",function(){
 				expect(arg.collection.on).toHaveBeenCalledWith("remove","removeModelView",context);
 			});
 			it("should call buildElement, passing along arg",function(){
-				expect(buildspy).toHaveBeenCalledWith(arg);
+				expect(context.buildElement).toHaveBeenCalledWith(arg);
 			});
 			it("should call setElement with result from buildElement",function(){
 				expect(context.setElement).toHaveBeenCalledWith("somehtml");
@@ -85,7 +83,7 @@ describe("The Collection functionality",function(){
 			var context = {
 				modelviewconstructor: Fakeview,
 				$el: {
-					append: jasmine.createSpy()
+					append: sinon.spy()
 				},
 				options: {
 					type: "sometypeofmodel",
@@ -113,7 +111,7 @@ describe("The Collection functionality",function(){
 		describe("the removeModelView function",function(){
 			var remove = base.prototype.removeModelView,
 				model = {cid: 777},
-				spy = jasmine.createSpy();
+				spy = sinon.spy();
 			var context = {
 				views: {
 					777:{
@@ -132,7 +130,7 @@ describe("The Collection functionality",function(){
 		describe("the addAllModels function",function(){
 			var addall = base.prototype.addAllModels;
 			var context = {
-				addModelView: jasmine.createSpy("add")
+				addModelView: sinon.spy()
 			};
 			var arg = [{cid:1},{cid:2},{cid:45}];
 			addall.call(context,arg);
@@ -153,12 +151,12 @@ describe("The Collection functionality",function(){
 					},
 					type: "sometype"
 				},
-				trigger: jasmine.createSpy("trigger")
+				trigger: sinon.spy()
 			};
 			var $el = $("<div><span id='target' class='model' cid=5>foo</span><span class='model' cid=4>foo</span></span></div>");
 			
-			var listener = jasmine.createSpy("modelclick");
-			var listener2 = jasmine.createSpy("modelclick2");
+			var listener = sinon.spy();
+			var listener2 = sinon.spy();
 			Mirage.on("modelclick",listener);
 			Mirage.on("modelclick:sometype",listener2);
 			
@@ -169,13 +167,10 @@ describe("The Collection functionality",function(){
 			Mirage.off("modelclick",listener);
 			Mirage.off("modelclick:sometype",listener2);
 			
-			var expecteddata = {cid:"5"};/*{
-				model: {cid:5},
-				type: "sometype"
-			}*/
+			var expecteddata = {cid:"5"};
 			it("should fire all relevant events", function() {
-				//expect(context.trigger).toHaveBeenCalledWith("modelclick",expecteddata);
-				//expect(context.trigger).toHaveBeenCalledWith("modelclick:sometype",expecteddata);
+				expect(context.trigger).toHaveBeenCalledWith("modelclick",expecteddata);
+				expect(context.trigger).toHaveBeenCalledWith("modelclick:sometype",expecteddata);
 			});
 			it("should also fire the events on the Mirage object",function(){
 				expect(listener).toHaveBeenCalledWith(expecteddata);
