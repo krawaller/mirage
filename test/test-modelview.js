@@ -79,9 +79,7 @@ describe("The Model functionality", function() {
 			var context = {
 				propUpdateHandler: {foo:"bar"},
 				setElement: sinon.spy(),
-				buildElement: sinon.spy(function(o){
-					return "BUILD";
-				})
+				buildElement: sinon.stub().returns("BUILD")
 			};
 			init.call(context,arg);
 			it("should set event listener on the model",function(){
@@ -198,9 +196,7 @@ describe("The Model functionality", function() {
 					}
 				};
 				var value = {
-					match: sinon.spy(function(regex){
-						return ["ok"];
-					})
+					match: sinon.stub().returns(["ok"])
 				};
 				var result = val({
 					propdef: propdef,
@@ -222,11 +218,8 @@ describe("The Model functionality", function() {
 						"regex2": "fooagain"
 					}
 				};
-				var matchspy = jasmine.createSpy("match");
 				var value = {
-					match: sinon.spy(function(regex){
-						return null;
-					})
+					match: sinon.stub().returns(null)
 				};
 				var result = val({
 					propdef: propdef,
@@ -279,9 +272,7 @@ describe("The Model functionality", function() {
 					props: {
 						foo: "foodef"
 					},
-					validateProperty: sinon.spy(function(data){
-						return [];
-					}),
+					validateProperty: sinon.stub().returns([]),
 					views: {foo:"fooview"}
 				};
 				sub.call(context);

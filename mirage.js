@@ -201,6 +201,7 @@ this.Mirage = (function(){
 			}
 			return "<select class='prop-edit-ctrl' name='"+o.name+"' multiple='multiple'>"+optstr+"</select>";
 		},
+		// TODO - skip element wrapper shit? or? gah! :) Here we have to override buildPart instead! woo! :)
 		valueHtml: function(o,val){
 			if (!val || !val.length){
 				return o.empty || "-----";

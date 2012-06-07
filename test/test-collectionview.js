@@ -25,9 +25,7 @@ describe("The Collection functionality",function(){
 			});
 			var context = {
 				foo:"bar",
-				buildElement: sinon.spy(function(o){
-					return "somehtml";
-				}),
+				buildElement: sinon.stub().returns("somehtml"),
 				setElement: sinon.spy(),
 				addAllModels: sinon.spy()
 			};

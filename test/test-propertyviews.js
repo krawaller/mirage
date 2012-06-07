@@ -192,10 +192,8 @@ describe("the Property functionality", function() {
 			var htmlspy = sinon.spy(),
 				context = {
 				$el: {
-					find: sinon.spy(function(o){
-						return {
-							html:htmlspy
-						}
+					find: sinon.stub().returns({
+						html:htmlspy
 					})
 				},
 				propdef: {
@@ -206,6 +204,9 @@ describe("the Property functionality", function() {
 				}
 			};
 			PropBaseView.prototype.updateValueElement.call(context,"BAR");
+			it("should use find with correct class to get the value element",function(){
+				expect(context.$el.find).toHaveBeenCalledWith(".prop-value");
+			});
 			it("should set the elements html to result from valueHtml call", function() {
 				expect(htmlspy).toHaveBeenCalledWith("fooBAR");
 			});
@@ -621,7 +622,6 @@ describe("the Property functionality", function() {
 		describe("the value html maker", function() {
 			var mkr = PropertyMultiSelectView.prototype.valueHtml;
 			it("returns the correct element", function() {
-				var wrapspy = jasmine.createSpy("elementWrapper");
 				var context = {
 					elementWrapper: function(o) {
 						return $("<span key='" + o.attributes.key + "'>" + o.content + "</span>");
@@ -646,7 +646,6 @@ describe("the Property functionality", function() {
 				expect(el).toEqual('<span key="1">one</span><span key="3">three</span>');
 			});
 			it("should use makeValue function if supplied, and use valueProp", function() {
-				var wrapspy = jasmine.createSpy("elementWrapper");
 				var context = {
 					elementWrapper: function(o) {
 						return $(o.content).attr("key", o.attributes.key);
