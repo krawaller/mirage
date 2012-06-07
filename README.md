@@ -43,7 +43,7 @@ referred to as a `propdef`. It looks like the following:
 ## Demos
 
 In spite of fancy plans there aren't that much up and running yet, however a small demonstration can be found
-[here](http://krawaller.github.com/mirage/dev/testsuite.html).
+[here](http://krawaller.github.com/mirage/dev/playground.html).
 
 ## Build process
 
