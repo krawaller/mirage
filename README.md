@@ -61,7 +61,7 @@ latest code.
 
 Several external libraries are involved in the testing process:
 
-*  [Jasmine](http://pivotal.github.com/jasmine/jsdoc/symbols/jasmine.Matchers.html)
+*  [Jasmine](https://jasmine.github.io/)
 *  [Sinon](http://sinonjs.org/docs/)
 *  [Sinon matchers for Jasmine](https://github.com/froots/jasmine-sinon)
 *  [jQuery matchers for Jasmine](https://github.com/velesin/jasmine-jquery)
